@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Belum Ada Anak Terdaftar — EduParent{% endblock %}
+
+{% block content %}
+<div class="min-h-[50vh] flex items-center justify-center">
+  <div class="glass-panel p-8 max-w-md w-full rounded-3xl border border-slate-200 text-center space-y-4">
+    <div class="w-16 h-16 rounded-full bg-amber-50 text-warm-600 flex items-center justify-center mx-auto">
+      <i data-lucide="user-x" class="w-8 h-8"></i>
+    </div>
+    <h2 class="font-heading text-xl font-black text-slate-900">Akun Belum Dihubungkan ke Data Siswa</h2>
+    <p class="text-xs text-slate-600 leading-relaxed">
+      Akun wali murid Anda belum terhubung dengan data siswa di sistem PAUD/TK. Silakan hubungi bagian Tata Usaha / Admin Sekolah untuk melakukan pemetaan data anak Anda.
+    </p>
+    <div class="pt-2">
+      <a href="https://wa.me/6281122334455" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white shadow-sm transition">
+        <i data-lucide="message-circle" class="w-4 h-4"></i> Hubungi Admin Sekolah
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Beranda Guru Kelas — EduParent{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Welcome Banner -->
+  <div class="glass-panel p-6 sm:p-8 rounded-3xl relative overflow-hidden bg-gradient-to-r from-teal-800 via-brand-700 to-teal-900 text-white shadow-xl">
+    <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur border border-white/20 text-xs font-semibold text-teal-200 mb-2">
+          <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i> Portal Guru & Wali Kelas
+        </div>
+        <h1 class="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight">
+          Halo, Bu/Pak {{ current_user.full_name }}! 👋
+        </h1>
+        <p class="text-sm text-teal-100/90 mt-1 max-w-xl">
+          Kelola jurnal harian siswa, catat perkembangan 4 pilar capaian, dan verifikasi keamanan penjemputan anak secara langsung hari ini.
+        </p>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="flex flex-wrap gap-2.5">
+        <a href="{{ url_for('teacher.pickup') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-400 hover:bg-amber-300 text-amber-950 transition shadow-md">
+          <i data-lucide="shield-check" class="w-4 h-4"></i> Papan Penjemputan
+        </a>
+        <a href="{{ url_for('teacher.journal') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-900 hover:bg-teal-50 transition shadow-sm">
+          <i data-lucide="book-open" class="w-4 h-4 text-brand-600"></i> Input Jurnal Hari Ini
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bento Grid 4 Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Siswa di Kelas -->
+    <div class="bento-card glass-panel p-5 rounded-2xl border border-slate-200/80 bg-white">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Siswa Kelas Anda</span>
+        <div class="w-10 h-10 rounded-xl bg-teal-50 text-brand-600 flex items-center justify-center">
+          <i data-lucide="users" class="w-5 h-5"></i>
+        </div>
+      </div>
+      <div class="mt-4 flex items-baseline gap-2">
+        <span class="font-heading text-3xl font-extrabold text-slate-900">{{ total_students }}</span>
+        <span class="text-xs text-slate-500 font-medium">Anak</span>
+      </div>
+      <p class="text-xs text-brand-600 font-semibold mt-2 flex items-center gap-1">
+        <i data-lucide="calendar" class="w-3.5 h-3.5"></i> {{ today|format_date_id }}
+      </p>
+    </div>
+
+    <!-- Jurnal Terisi Hari Ini -->
+    <div class="bento-card glass-panel p-5 rounded-2xl border border-slate-200/80 bg-white">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Jurnal Terisi Hari Ini</span>
+        <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+          <i data-lucide="book-open" class="w-5 h-5"></i>
+        </div>
+      </div>
+      <div class="mt-4 flex items-baseline gap-2">
+        <span class="font-heading text-3xl font-extrabold text-slate-900">{{ journals_today_count }}</span>
+        <span class="text-xs text-slate-500 font-medium">/ {{ total_students }} anak</span>
+      </div>
+      <p class="text-xs text-purple-600 font-semibold mt-2 flex items-center gap-1">
+        <i data-lucide="clock" class="w-3.5 h-3.5"></i> Update Real-Time ke Ortu
+      </p>
+    </div>
+
+    <!-- Anak Menunggu Dijemput (Pulsing highlight) -->
+    <div class="bento-card glass-panel p-5 rounded-2xl border border-amber-200 bg-amber-50/50">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold uppercase tracking-wider text-amber-800">Menunggu Dijemput</span>
+        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+          <i data-lucide="clock" class="w-5 h-5"></i>
+        </div>
+      </div>
+      <div class="mt-4 flex items-baseline gap-2">
+        <span class="font-heading text-3xl font-extrabold text-amber-900">{{ waiting_count }}</span>
+        <span class="text-xs text-amber-700 font-medium">Anak</span>
+      </div>
+      <p class="text-xs text-amber-700 font-semibold mt-2 flex items-center gap-1">
+        <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span> Di Area Tunggu Sekolah
+      </p>
+    </div>
+
+    <!-- Sudah Terverifikasi Pulang -->
+    <div class="bento-card glass-panel p-5 rounded-2xl border border-slate-200/80 bg-white">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Sudah Dijemput</span>
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <i data-lucide="check-check" class="w-5 h-5"></i>
+        </div>
+      </div>
+      <div class="mt-4 flex items-baseline gap-2">
+        <span class="font-heading text-3xl font-extrabold text-slate-900">{{ picked_up_count }}</span>
+        <span class="text-xs text-slate-500 font-medium">Anak</span>
+      </div>
+      <p class="text-xs text-emerald-600 font-semibold mt-2 flex items-center gap-1">
+        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Identitas & Foto Terverifikasi
+      </p>
+    </div>
+  </div>
+
+  <!-- Main Section: Live Pickup Verification Board Preview & Alert Warnings -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Live Pickup Table Preview (2 Cols) -->
+    <div class="lg:col-span-2 glass-panel p-6 rounded-2xl border border-slate-200/80 bg-white space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="font-heading text-lg font-bold text-slate-900 flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+            Status Penjemputan Langsung Siswa
+          </h2>
+          <p class="text-xs text-slate-500">Verifikasi saat penjemput datang ke pintu gerbang/kelas</p>
+        </div>
+        <a href="{{ url_for('teacher.pickup') }}" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+          Buka Papan Lengkap <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+        </a>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-600">
+          <thead class="text-xs uppercase bg-slate-50 text-slate-500 border-b border-slate-100">
+            <tr>
+              <th class="py-3 px-3">Anak</th>
+              <th class="py-3 px-3">Status Saat Ini</th>
+              <th class="py-3 px-3">Penjemput Terdata</th>
+              <th class="py-3 px-3 text-right">Aksi Cepat</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% for s in students %}
+            {% set p = pickup_map.get(s.id) %}
+            <tr class="hover:bg-slate-50/60 transition">
+              <td class="py-3 px-3 flex items-center gap-2.5">
+                <img src="{{ s.photo_url or url_for('static', filename='img/avatar_arkan.svg') }}" class="w-8 h-8 rounded-full border border-slate-200 object-cover">
+                <div>
+                  <span class="font-bold text-slate-900">{{ s.full_name }}</span>
+                  <span class="text-xs text-slate-400 block">{{ s.classroom.name }}</span>
+                </div>
+              </td>
+              <td class="py-3 px-3">
+                {% if p and p.status == 'SUDAH_DIJEMPUT' %}
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200">
+                    <i data-lucide="check-circle" class="w-3.5 h-3.5 text-teal-600"></i> SUDAH DIJEMPUT
+                  </span>
+                {% else %}
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> MENUNGGU
+                  </span>
+                {% endif %}
+              </td>
+              <td class="py-3 px-3 text-xs">
+                {% if p and p.status == 'SUDAH_DIJEMPUT' %}
+                  <span class="font-bold text-slate-800 block">{{ p.collector_name }}</span>
+                  <span class="text-slate-500 text-[11px]">{{ p.collector_relation }} • {{ p.pickup_time.strftime('%H:%M WIB') if p.pickup_time else '' }}</span>
+                {% else %}
+                  <span class="text-slate-400 italic">Belum ada penjemput</span>
+                {% endif %}
+              </td>
+              <td class="py-3 px-3 text-right">
+                <a href="{{ url_for('teacher.pickup', class_id=s.class_id) }}" class="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold bg-brand-50 text-brand-700 hover:bg-brand-100 transition">
+                  <i data-lucide="shield" class="w-3.5 h-3.5"></i> Verifikasi
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Active Health Alerts (1 Col) -->
+    <div class="glass-panel p-6 rounded-2xl border border-slate-200/80 bg-white space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="font-heading text-lg font-bold text-slate-900 flex items-center gap-1.5">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i> Peringatan Kesehatan
+          </h2>
+          <p class="text-xs text-slate-500">Perlu perhatian guru & orang tua</p>
+        </div>
+        <a href="{{ url_for('teacher.alerts') }}" class="text-xs font-bold text-brand-600 hover:text-brand-700">
+          Buat Baru
+        </a>
+      </div>
+
+      <div class="space-y-3">
+        {% for alert in active_alerts %}
+        <div class="p-3.5 rounded-xl border text-xs space-y-1.5
+          {% if alert.severity == 'HIGH' %}bg-rose-50 border-rose-200 text-rose-900
+          {% elif alert.severity == 'MEDIUM' %}bg-amber-50 border-amber-200 text-amber-900
+          {% else %}bg-sky-50 border-sky-200 text-sky-900{% endif %}">
+          <div class="flex items-center justify-between font-bold">
+            <span>{{ alert.student.nickname }} — {{ alert.title }}</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded uppercase font-extrabold
+              {% if alert.severity == 'HIGH' %}bg-rose-200 text-rose-800
+              {% elif alert.severity == 'MEDIUM' %}bg-amber-200 text-amber-800
+              {% else %}bg-sky-200 text-sky-800{% endif %}">
+              {{ alert.severity }}
+            </span>
+          </div>
+          <p class="text-slate-700 line-clamp-2 leading-relaxed">{{ alert.description }}</p>
+          <div class="flex items-center justify-between pt-1 text-[10px] text-slate-500">
+            <span>{{ alert.created_at|format_datetime_id }}</span>
+            <span class="italic font-medium">{% if alert.is_acknowledged %}✓ Ortu membaca{% else %}⌛ Menunggu konfirmasi ortu{% endif %}</span>
+          </div>
+        </div>
+        {% else %}
+        <div class="text-center py-8 text-slate-400 text-xs">
+          <i data-lucide="smile" class="w-8 h-8 mx-auto mb-2 text-emerald-500"></i>
+          Tidak ada peringatan kesehatan aktif. Seluruh anak sehat dan riang!
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

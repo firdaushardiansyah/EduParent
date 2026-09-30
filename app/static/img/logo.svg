@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <defs>
+    <linearGradient id="gradTealAmber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0D9488" />
+      <stop offset="100%" stop-color="#14B8A6" />
+    </linearGradient>
+    <linearGradient id="gradStar" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#FBBF24" />
+    </linearGradient>
+  </defs>
+  <!-- Background Soft Rounded Shape -->
+  <rect x="4" y="4" width="72" height="72" rx="22" fill="url(#gradTealAmber)" />
+  <!-- Protective Hug / Open Book -->
+  <path d="M18 52 C 26 40, 36 44, 40 48 C 44 44, 54 40, 62 52 C 60 58, 44 64, 40 64 C 36 64, 20 58, 18 52 Z" fill="#FFFFFF" fill-opacity="0.95" />
+  <!-- Blooming Child Star -->
+  <circle cx="40" cy="28" r="9" fill="url(#gradStar)" />
+  <circle cx="37" cy="27" r="1.5" fill="#78350F" />
+  <circle cx="43" cy="27" r="1.5" fill="#78350F" />
+  <path d="M38 31 Q 40 34, 42 31" stroke="#78350F" stroke-width="1.2" stroke-linecap="round" fill="none" />
+  <!-- Sprout leaves -->
+  <path d="M32 38 C 30 33, 35 32, 38 35 Z" fill="#34D399" />
+  <path d="M48 38 C 50 33, 45 32, 42 35 Z" fill="#34D399" />
+</svg>

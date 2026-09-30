@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Linimasa Jurnal & Galeri Aktivitas — EduParent{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <a href="{{ url_for('parent.dashboard', child_id=selected_child.id) }}" class="text-xs text-brand-600 font-bold hover:underline flex items-center gap-1">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Dashboard {{ selected_child.nickname }}
+        </a>
+      </div>
+      <h1 class="font-heading text-2xl font-black text-slate-900">Linimasa Jurnal Harian & Galeri Aktivitas</h1>
+      <p class="text-xs text-slate-500 mt-0.5">Dokumentasi momen belajar, bermain, menu makanan, dan kehadiran {{ selected_child.full_name }}</p>
+    </div>
+
+    <!-- Multi-child switcher if applicable -->
+    {% if children|length > 1 %}
+    <div class="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white border border-slate-200">
+      {% for ch in children %}
+        <a href="{{ url_for('parent.journal_feed', student_id=ch.id) }}"
+          class="px-3 py-1 rounded-xl text-xs font-bold transition {% if selected_child.id == ch.id %}bg-brand-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+          {{ ch.nickname }}
+        </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Timeline Feed -->
+  <div class="space-y-6 relative before:absolute before:inset-0 before:left-4 sm:before:left-8 before:w-0.5 before:bg-slate-200">
+    {% for j in journals %}
+    <div class="relative flex items-start gap-4 sm:gap-6">
+      
+      <!-- Date Marker Bullet -->
+      <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-teal-400 text-white flex items-center justify-center font-extrabold text-xs shadow-md shadow-brand-500/20 flex-shrink-0 z-10 border-2 border-white">
+        <i data-lucide="calendar" class="w-4 h-4"></i>
+      </div>
+
+      <!-- Journal Card -->
+      <div class="flex-1 glass-panel p-6 rounded-3xl border border-slate-200/80 bg-white shadow-sm space-y-4">
+        
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <span class="font-heading font-black text-slate-900 text-base">
+              {{ j.date|format_date_id }}
+            </span>
+            <span class="text-xs text-slate-400 block mt-0.5">Dicatat oleh Wali Kelas: {{ j.teacher.full_name }}</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- Mood -->
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-teal-50 text-teal-800 border border-teal-100">
+              <i data-lucide="smile" class="w-3.5 h-3.5 text-warm-500"></i> {{ j.mood_status }}
+            </span>
+
+            <!-- Attendance -->
+            <span class="px-2.5 py-1 rounded-lg text-xs font-bold
+              {% if j.attendance == 'HADIR' %}bg-emerald-50 text-emerald-700 border border-emerald-200
+              {% elif j.attendance == 'SAKIT' %}bg-amber-50 text-amber-700 border border-amber-200
+              {% elif j.attendance == 'IZIN' %}bg-sky-50 text-sky-700 border border-sky-200
+              {% else %}bg-rose-50 text-rose-700 border border-rose-200{% endif %}">
+              {{ j.attendance }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Activity Body -->
+        <div class="space-y-3 text-xs leading-relaxed text-slate-700">
+          <div>
+            <span class="font-bold text-slate-800 block text-xs uppercase tracking-wider mb-1">Rangkuman Aktivitas:</span>
+            <p class="bg-slate-50 p-3.5 rounded-2xl border border-slate-100/80 text-slate-700">
+              {{ j.activity_summary }}
+            </p>
+          </div>
+
+          <!-- Meals -->
+          {% if j.meal_notes %}
+          <div class="bg-amber-50/60 p-3 rounded-2xl border border-amber-100/80 text-amber-950 flex items-start gap-2.5">
+            <div class="p-1 rounded-lg bg-amber-100 text-amber-700 flex-shrink-0">
+              <i data-lucide="utensils" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <span class="font-bold block text-xs">Porsi & Catatan Makan:</span>
+              <p class="text-xs italic text-slate-600 mt-0.5">{{ j.meal_notes }}</p>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Photo Attachment -->
+          {% if j.photo_url %}
+          <div class="pt-2">
+            <span class="font-bold text-slate-800 block text-xs uppercase tracking-wider mb-1.5">Foto Kegiatan:</span>
+            <img src="{{ j.photo_url }}" class="w-full max-h-80 object-cover rounded-2xl border border-slate-200 shadow-sm cursor-pointer hover:opacity-95 transition"
+                 onclick="window.open('{{ j.photo_url }}', '_blank')">
+          </div>
+          {% endif %}
+        </div>
+
+      </div>
+
+    </div>
+    {% else %}
+    <div class="glass-panel p-12 rounded-3xl border border-slate-200/80 bg-white text-center text-slate-400">
+      <i data-lucide="book-open" class="w-10 h-10 mx-auto mb-2 text-slate-300"></i>
+      <p class="font-bold text-slate-600">Belum ada catatan jurnal untuk {{ selected_child.nickname }}.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

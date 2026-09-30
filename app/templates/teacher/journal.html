@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Jurnal Harian Siswa — EduParent{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="font-heading text-2xl font-black text-slate-900">Jurnal Aktivitas & Kehadiran Harian</h1>
+      <p class="text-xs text-slate-500 mt-1">Catat aktivitas belajar, menu makan siang, suasana hati, dan dokumentasi foto harian anak didik</p>
+    </div>
+  </div>
+
+  <!-- Filter by Class & Date -->
+  <div class="glass-panel p-4 rounded-2xl border border-slate-200/80 bg-white flex flex-wrap items-center justify-between gap-4 shadow-sm">
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Kelas:</span>
+      <div class="flex flex-wrap gap-1.5">
+        {% for c in classes %}
+          <a href="{{ url_for('teacher.journal', class_id=c.id, date=selected_date.strftime('%Y-%m-%d')) }}"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition {% if selected_class_id == c.id %}bg-brand-600 text-white shadow-sm{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+            {{ c.name }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Date selector -->
+    <form method="GET" action="{{ url_for('teacher.journal') }}" class="flex items-center gap-2">
+      <input type="hidden" name="class_id" value="{{ selected_class_id }}">
+      <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Tanggal:</span>
+      <input type="date" name="date" value="{{ selected_date.strftime('%Y-%m-%d') }}" onchange="this.form.submit()"
+        class="px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 bg-white">
+    </form>
+  </div>
+
+  <!-- Students Journal Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    {% for s in students %}
+    {% set j = journal_map.get(s.id) %}
+    <div class="glass-panel p-5 rounded-3xl border {% if j %}border-teal-200/80 bg-white{% else %}border-slate-200/80 bg-slate-50/50{% endif %} shadow-sm flex flex-col justify-between space-y-4">
+      
+      <div>
+        <!-- Student Identity -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <img src="{{ s.photo_url or url_for('static', filename='img/avatar_arkan.svg') }}" class="w-12 h-12 rounded-2xl border border-slate-200 object-cover shadow-sm">
+            <div>
+              <h3 class="font-heading font-extrabold text-slate-900 text-base">{{ s.full_name }}</h3>
+              <p class="text-xs text-slate-500">Panggilan: <span class="font-bold text-brand-700">{{ s.nickname }}</span></p>
+            </div>
+          </div>
+          {% if j %}
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold
+              {% if j.attendance == 'HADIR' %}bg-emerald-50 text-emerald-700 border border-emerald-200
+              {% elif j.attendance == 'SAKIT' %}bg-amber-50 text-amber-700 border border-amber-200
+              {% elif j.attendance == 'IZIN' %}bg-sky-50 text-sky-700 border border-sky-200
+              {% else %}bg-rose-50 text-rose-700 border border-rose-200{% endif %}">
+              {{ j.attendance }}
+            </span>
+          {% else %}
+            <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-200 text-slate-600">
+              Belum Diisi
+            </span>
+          {% endif %}
+        </div>
+
+        <!-- Journal Content Details -->
+        {% if j %}
+        <div class="mt-4 space-y-3 text-xs">
+          <!-- Mood -->
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-slate-500">Mood:</span>
+            <span class="inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-100">
+              <i data-lucide="sparkles" class="w-3 h-3 text-warm-500"></i> {{ j.mood_status }}
+            </span>
+          </div>
+
+          <!-- Activity -->
+          <div>
+            <span class="font-bold text-slate-700 block mb-0.5">Kegiatan Hari Ini:</span>
+            <p class="text-slate-600 leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              {{ j.activity_summary }}
+            </p>
+          </div>
+
+          <!-- Meals -->
+          {% if j.meal_notes %}
+          <div>
+            <span class="font-bold text-slate-700 block mb-0.5">Catatan Makan / Bekal:</span>
+            <p class="text-slate-600 italic bg-amber-50/50 p-2 rounded-xl border border-amber-100/60">
+              {{ j.meal_notes }}
+            </p>
+          </div>
+          {% endif %}
+
+          <!-- Photo if any -->
+          {% if j.photo_url %}
+          <div class="mt-2">
+            <span class="font-bold text-slate-700 block mb-1">Foto Aktivitas:</span>
+            <img src="{{ j.photo_url }}" class="w-full h-36 rounded-xl object-cover border border-slate-200">
+          </div>
+          {% endif %}
+        </div>
+        {% else %}
+        <div class="mt-6 text-center py-6 text-slate-400 text-xs italic">
+          <i data-lucide="edit" class="w-6 h-6 mx-auto mb-1 text-slate-300"></i>
+          Belum ada catatan jurnal pada tanggal {{ selected_date|format_date_id }}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Action Button -->
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+        <button onclick="openJournalModal({{ s.id }}, '{{ s.nickname|replace("'", "\\'") }}', '{{ j.attendance if j else 'HADIR' }}', '{{ j.mood_status if j else 'Ceria' }}', '{{ (j.activity_summary or '')|replace("\n", " ")|replace("'", "\\'") if j else '' }}', '{{ (j.meal_notes or '')|replace("\n", " ")|replace("'", "\\'") if j else '' }}')"
+          class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 flex items-center justify-center gap-1.5 shadow-sm transition">
+          <i data-lucide="edit-3" class="w-4 h-4"></i>
+          {% if j %}Perbarui Jurnal{% else %}Tulis Jurnal Harian{% endif %}
+        </button>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<!-- Modal: Tulis / Perbarui Jurnal -->
+<div id="modal-journal" class="modal-dialog hidden fixed inset-0 z-50 overflow-y-auto items-center justify-center p-4">
+  <div class="modal-overlay fixed inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+  <div class="modal-content relative bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 z-10 space-y-5">
+    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <div>
+        <h3 class="font-heading text-lg font-black text-slate-900">Jurnal Harian Siswa</h3>
+        <p class="text-xs text-slate-500">Siswa: <span id="modal-student-name" class="font-bold text-brand-600"></span></p>
+      </div>
+      <button onclick="closeModal('modal-journal')" class="text-slate-400 hover:text-slate-600">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <form action="{{ url_for('teacher.save_journal') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+      <input type="hidden" name="student_id" id="journal-student-id">
+      <input type="hidden" name="date" value="{{ selected_date.strftime('%Y-%m-%d') }}">
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Status Kehadiran</label>
+          <select name="attendance" id="journal-attendance" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+            <option value="HADIR">HADIR</option>
+            <option value="SAKIT">SAKIT</option>
+            <option value="IZIN">IZIN</option>
+            <option value="ALPA">ALPA</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Suasana Hati (Mood)</label>
+          <select name="mood_status" id="journal-mood" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+            <option value="Ceria & Aktif">Ceria & Aktif</option>
+            <option value="Ceria">Ceria</option>
+            <option value="Tenang & Mandiri">Tenang & Mandiri</option>
+            <option value="Sangat Antusias">Sangat Antusias</option>
+            <option value="Kurang Bersemangat">Kurang Bersemangat</option>
+            <option value="Menangis / Ingin Pulang">Menangis / Ingin Pulang</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Ringkasan Aktivitas Belajar & Bermain</label>
+        <textarea name="activity_summary" id="journal-activity" rows="3" required
+          placeholder="contoh: Mengikuti senam pagi, mewarnai gambar pemandangan, dan menyusun balok kayu bersama teman..."
+          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Catatan Porsi Makan & Bekal</label>
+        <input type="text" name="meal_notes" id="journal-meals"
+          placeholder="contoh: Habis 1 porsi sup bayam dan tempe, minum air 300ml"
+          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Unggah Foto Dokumentasi (Opsional)</label>
+        <input type="file" name="photo" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100">
+      </div>
+
+      <div class="pt-3 flex justify-end gap-2 border-t border-slate-100">
+        <button type="button" onclick="closeModal('modal-journal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">
+          Batal
+        </button>
+        <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 shadow">
+          Simpan Jurnal
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openJournalModal(studentId, nickname, attendance, mood, activity, meals) {
+    document.getElementById('journal-student-id').value = studentId;
+    document.getElementById('modal-student-name').innerText = nickname;
+    document.getElementById('journal-attendance').value = attendance || 'HADIR';
+    document.getElementById('journal-mood').value = mood || 'Ceria & Aktif';
+    document.getElementById('journal-activity').value = activity || '';
+    document.getElementById('journal-meals').value = meals || '';
+    openModal('modal-journal');
+  }
+</script>
+{% endblock %}

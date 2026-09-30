@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Capaian Tumbuh Kembang — EduParent{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="font-heading text-2xl font-black text-slate-900">Penilaian Capaian Tumbuh Kembang</h1>
+      <p class="text-xs text-slate-500 mt-1">Evaluasi 4 pilar perkembangan anak usia dini berstandar PAUD nasional (BB, MB, BSH, BSB)</p>
+    </div>
+  </div>
+
+  <!-- Legend Banner for Indonesian PAUD Standards -->
+  <div class="glass-panel p-4 rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Panduan Skala Capaian PAUD/TK:</span>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+      <div class="p-2.5 rounded-xl bg-rose-50 border border-rose-200/80">
+        <span class="font-black text-rose-800">1 — BB</span>
+        <span class="font-bold text-rose-900 block text-[11px]">Belum Berkembang</span>
+        <p class="text-[10px] text-rose-700 mt-0.5">Anak belum memperlihatkan perilaku yang diharapkan</p>
+      </div>
+      <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200/80">
+        <span class="font-black text-warm-800">2 — MB</span>
+        <span class="font-bold text-warm-900 block text-[11px]">Mulai Berkembang</span>
+        <p class="text-[10px] text-warm-700 mt-0.5">Mulai memperlihatkan namun masih dengan bimbingan</p>
+      </div>
+      <div class="p-2.5 rounded-xl bg-teal-50 border border-teal-200/80">
+        <span class="font-black text-brand-800">3 — BSH</span>
+        <span class="font-bold text-brand-900 block text-[11px]">Berkembang Sesuai Harapan</span>
+        <p class="text-[10px] text-brand-700 mt-0.5">Anak konsisten berkembang sesuai tahap usianya</p>
+      </div>
+      <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200/80">
+        <span class="font-black text-emerald-800">4 — BSB</span>
+        <span class="font-bold text-emerald-900 block text-[11px]">Berkembang Sangat Baik</span>
+        <p class="text-[10px] text-emerald-700 mt-0.5">Mandiri dan mampu membantu/mencontohkan ke teman</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Class Selector -->
+  <div class="glass-panel p-3 rounded-2xl border border-slate-200/80 bg-white flex items-center gap-2">
+    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pilih Kelas:</span>
+    <div class="flex flex-wrap gap-1.5">
+      {% for c in classes %}
+        <a href="{{ url_for('teacher.development', class_id=c.id) }}"
+          class="px-3 py-1 rounded-xl text-xs font-bold transition {% if selected_class_id == c.id %}bg-brand-600 text-white shadow-sm{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+          {{ c.name }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Students Development Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    {% for s in students %}
+    {% set score = latest_scores.get(s.id) %}
+    <div class="glass-panel p-5 rounded-3xl border border-slate-200/80 bg-white shadow-sm flex flex-col justify-between space-y-4">
+      <div>
+        <!-- Student Header -->
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-3">
+            <img src="{{ s.photo_url or url_for('static', filename='img/avatar_arkan.svg') }}" class="w-11 h-11 rounded-2xl border border-slate-200 object-cover shadow-sm">
+            <div>
+              <h3 class="font-heading font-extrabold text-slate-900 text-sm">{{ s.full_name }}</h3>
+              <p class="text-xs text-slate-500">Panggilan: <span class="font-bold text-brand-700">{{ s.nickname }}</span> ({{ s.age }})</p>
+            </div>
+          </div>
+          {% if score %}
+            <span class="px-2 py-1 rounded-xl text-xs font-extrabold bg-teal-50 text-teal-800 border border-teal-200">
+              Rata² {{ score.average_score }} / 4
+            </span>
+          {% endif %}
+        </div>
+
+        <!-- 4 Pillars Scores -->
+        {% if score %}
+        <div class="mt-4 space-y-2 text-xs">
+          <!-- Gross Motor -->
+          <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50">
+            <span class="font-medium text-slate-700 flex items-center gap-1.5">
+              <i data-lucide="activity" class="w-3.5 h-3.5 text-brand-600"></i> Motorik Kasar:
+            </span>
+            <span class="font-bold px-2 py-0.5 rounded text-[11px]
+              {% if score.gross_motor_score == 4 %}bg-emerald-100 text-emerald-800
+              {% elif score.gross_motor_score == 3 %}bg-teal-100 text-teal-800
+              {% elif score.gross_motor_score == 2 %}bg-amber-100 text-amber-800
+              {% else %}bg-rose-100 text-rose-800{% endif %}">
+              {{ score.gross_motor_label.code }} (Skor {{ score.gross_motor_score }})
+            </span>
+          </div>
+
+          <!-- Fine Motor -->
+          <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50">
+            <span class="font-medium text-slate-700 flex items-center gap-1.5">
+              <i data-lucide="scissors" class="w-3.5 h-3.5 text-purple-600"></i> Motorik Halus:
+            </span>
+            <span class="font-bold px-2 py-0.5 rounded text-[11px]
+              {% if score.fine_motor_score == 4 %}bg-emerald-100 text-emerald-800
+              {% elif score.fine_motor_score == 3 %}bg-teal-100 text-teal-800
+              {% elif score.fine_motor_score == 2 %}bg-amber-100 text-amber-800
+              {% else %}bg-rose-100 text-rose-800{% endif %}">
+              {{ score.fine_motor_label.code }} (Skor {{ score.fine_motor_score }})
+            </span>
+          </div>
+
+          <!-- Cognitive -->
+          <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50">
+            <span class="font-medium text-slate-700 flex items-center gap-1.5">
+              <i data-lucide="brain" class="w-3.5 h-3.5 text-sky-600"></i> Kognitif & Bahasa:
+            </span>
+            <span class="font-bold px-2 py-0.5 rounded text-[11px]
+              {% if score.cognitive_score == 4 %}bg-emerald-100 text-emerald-800
+              {% elif score.cognitive_score == 3 %}bg-teal-100 text-teal-800
+              {% elif score.cognitive_score == 2 %}bg-amber-100 text-amber-800
+              {% else %}bg-rose-100 text-rose-800{% endif %}">
+              {{ score.cognitive_label.code }} (Skor {{ score.cognitive_score }})
+            </span>
+          </div>
+
+          <!-- Social Emotional -->
+          <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50">
+            <span class="font-medium text-slate-700 flex items-center gap-1.5">
+              <i data-lucide="heart-handshake" class="w-3.5 h-3.5 text-rose-600"></i> Sosial Emosional:
+            </span>
+            <span class="font-bold px-2 py-0.5 rounded text-[11px]
+              {% if score.social_emotional_score == 4 %}bg-emerald-100 text-emerald-800
+              {% elif score.social_emotional_score == 3 %}bg-teal-100 text-teal-800
+              {% elif score.social_emotional_score == 2 %}bg-amber-100 text-amber-800
+              {% else %}bg-rose-100 text-rose-800{% endif %}">
+              {{ score.social_emotional_label.code }} (Skor {{ score.social_emotional_score }})
+            </span>
+          </div>
+
+          <!-- Comments -->
+          {% if score.teacher_comments %}
+          <div class="pt-1">
+            <p class="text-[11px] text-slate-600 italic bg-amber-50/60 p-2 rounded-xl border border-amber-100/60">
+              "{{ score.teacher_comments }}"
+            </p>
+          </div>
+          {% endif %}
+
+          <p class="text-[10px] text-slate-400 text-right pt-1">
+            Dinilai pada: {{ score.evaluation_date|format_date_id }}
+          </p>
+        </div>
+        {% else %}
+        <div class="mt-6 text-center py-8 text-slate-400 text-xs italic">
+          <i data-lucide="award" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+          Belum ada catatan evaluasi tumbuh kembang.
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Action Button -->
+      <div class="pt-3 border-t border-slate-100">
+        <button onclick="openDevelopmentModal({{ s.id }}, '{{ s.nickname|replace("'", "\\'") }}', {{ score.gross_motor_score if score else 3 }}, {{ score.fine_motor_score if score else 3 }}, {{ score.cognitive_score if score else 3 }}, {{ score.social_emotional_score if score else 3 }}, '{{ (score.teacher_comments or '')|replace("\n", " ")|replace("'", "\\'") if score else '' }}')"
+          class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 flex items-center justify-center gap-1.5 shadow-sm transition">
+          <i data-lucide="edit-3" class="w-4 h-4"></i>
+          {% if score %}Perbarui Nilai Capaian{% else %}Input Penilaian Tumbuh Kembang{% endif %}
+        </button>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<!-- Modal: Input Nilai Perkembangan -->
+<div id="modal-dev" class="modal-dialog hidden fixed inset-0 z-50 overflow-y-auto items-center justify-center p-4">
+  <div class="modal-overlay fixed inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+  <div class="modal-content relative bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 z-10 space-y-5">
+    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <div>
+        <h3 class="font-heading text-lg font-black text-slate-900">Evaluasi Capaian Tumbuh Kembang</h3>
+        <p class="text-xs text-slate-500">Siswa: <span id="dev-student-name" class="font-bold text-brand-600"></span></p>
+      </div>
+      <button onclick="closeModal('modal-dev')" class="text-slate-400 hover:text-slate-600">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <form action="{{ url_for('teacher.save_development') }}" method="POST" class="space-y-4">
+      <input type="hidden" name="student_id" id="dev-student-id">
+
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Tanggal Evaluasi</label>
+        <input type="date" name="evaluation_date" value="{{ date_str or '' }}" id="dev-date" required
+          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+      </div>
+
+      <!-- 4 Aspects -->
+      <div class="space-y-3">
+        <!-- 1. Motorik Kasar -->
+        <div>
+          <label class="block text-xs font-bold text-slate-800 mb-1">1. Motorik Kasar (Keseimbangan, Berlari, Melompat)</label>
+          <select name="gross_motor_score" id="dev-gross" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+            <option value="1">1 — BB (Belum Berkembang)</option>
+            <option value="2">2 — MB (Mulai Berkembang)</option>
+            <option value="3" selected>3 — BSH (Berkembang Sesuai Harapan)</option>
+            <option value="4">4 — BSB (Berkembang Sangat Baik)</option>
+          </select>
+        </div>
+
+        <!-- 2. Motorik Halus -->
+        <div>
+          <label class="block text-xs font-bold text-slate-800 mb-1">2. Motorik Halus (Memegang Krayon, Meronce, Menggunting)</label>
+          <select name="fine_motor_score" id="dev-fine" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+            <option value="1">1 — BB (Belum Berkembang)</option>
+            <option value="2">2 — MB (Mulai Berkembang)</option>
+            <option value="3" selected>3 — BSH (Berkembang Sesuai Harapan)</option>
+            <option value="4">4 — BSB (Berkembang Sangat Baik)</option>
+          </select>
+        </div>
+
+        <!-- 3. Kognitif -->
+        <div>
+          <label class="block text-xs font-bold text-slate-800 mb-1">3. Kognitif & Bahasa (Simbol Huruf, Logika Pola, Kosakata)</label>
+          <select name="cognitive_score" id="dev-cognitive" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+            <option value="1">1 — BB (Belum Berkembang)</option>
+            <option value="2">2 — MB (Mulai Berkembang)</option>
+            <option value="3" selected>3 — BSH (Berkembang Sesuai Harapan)</option>
+            <option value="4">4 — BSB (Berkembang Sangat Baik)</option>
+          </select>
+        </div>
+
+        <!-- 4. Sosial Emosional -->
+        <div>
+          <label class="block text-xs font-bold text-slate-800 mb-1">4. Sosial Emosional (Kemandirian, Berbagi, Regulasi Diri)</label>
+          <select name="social_emotional_score" id="dev-social" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+            <option value="1">1 — BB (Belum Berkembang)</option>
+            <option value="2">2 — MB (Mulai Berkembang)</option>
+            <option value="3" selected>3 — BSH (Berkembang Sesuai Harapan)</option>
+            <option value="4">4 — BSB (Berkembang Sangat Baik)</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Catatan Naratif & Rekomendasi Guru</label>
+        <textarea name="teacher_comments" id="dev-comments" rows="3"
+          placeholder="Berikan apresiasi dan catatan khusus untuk stimulasi di rumah oleh orang tua..."
+          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500"></textarea>
+      </div>
+
+      <div class="pt-3 flex justify-end gap-2 border-t border-slate-100">
+        <button type="button" onclick="closeModal('modal-dev')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">
+          Batal
+        </button>
+        <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 shadow">
+          Simpan Nilai Capaian
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openDevelopmentModal(studentId, nickname, gross, fine, cognitive, social, comments) {
+    document.getElementById('dev-student-id').value = studentId;
+    document.getElementById('dev-student-name').innerText = nickname;
+    document.getElementById('dev-gross').value = gross || 3;
+    document.getElementById('dev-fine').value = fine || 3;
+    document.getElementById('dev-cognitive').value = cognitive || 3;
+    document.getElementById('dev-social').value = social || 3;
+    document.getElementById('dev-comments').value = comments || '';
+    
+    // Set today's date if empty
+    const dateInput = document.getElementById('dev-date');
+    if (!dateInput.value) {
+      const today = new Date().toISOString().split('T')[0];
+      dateInput.value = today;
+    }
+    openModal('modal-dev');
+  }
+</script>
+{% endblock %}
