@@ -1,6 +1,7 @@
 import os
 from flask import Flask, redirect, url_for
 from flask_login import LoginManager, current_user
+from flask_wtf.csrf import CSRFProtect
 from app.config import config_by_name
 from app.models import db, User
 
@@ -8,6 +9,8 @@ login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 login_manager.login_message = 'Silakan masuk untuk mengakses sistem.'
 login_manager.login_message_category = 'info'
+
+csrf = CSRFProtect()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -25,6 +28,7 @@ def create_app(config_name='development'):
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
+    csrf.init_app(app)
 
     # Register Blueprints
     from app.auth.routes import auth_bp
