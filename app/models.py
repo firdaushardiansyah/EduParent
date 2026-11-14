@@ -77,6 +77,7 @@ class Student(db.Model):
     class_id = db.Column(db.Integer, db.ForeignKey('class_rooms.id'), nullable=False)
     parent_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     photo_url = db.Column(db.String(255), nullable=True)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships

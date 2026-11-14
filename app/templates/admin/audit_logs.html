@@ -3,43 +3,43 @@
 {% block title %}Log Audit Keamanan — EduParent{% endblock %}
 
 {% block content_area %}
-<div class="space-y-6">
+<div class="p-6 space-y-6">
 
   <!-- Header -->
   <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
     <div>
-      <h1 class="font-heading text-2xl font-black text-slate-900">Log Audit & Keamanan Sistem</h1>
-      <p class="text-xs text-slate-500 mt-1">Rekaman jejak aktivitas pengguna, verifikasi penjemputan, dan transaksi data</p>
+      <h1 class="text-2xl font-bold text-slate-900">Log Audit & Keamanan Sistem</h1>
+      <p class="text-sm text-slate-500 mt-1">Rekaman jejak aktivitas pengguna, verifikasi penjemputan, dan transaksi data</p>
     </div>
-    <span class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1.5">
-      <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i> Audit Trail Aktif
+    <span class="text-xs font-medium px-3 py-1.5 rounded-md bg-white text-slate-700 border border-slate-200 flex items-center gap-1.5 shadow-sm">
+      <span class="w-2 h-2 rounded-full bg-emerald-600"></span> Audit Trail Aktif
     </span>
   </div>
 
   <!-- Filter Bar -->
-  <div class="glass-panel p-3 rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+  <div class="bg-white border border-slate-200 rounded-lg p-3">
     <form method="GET" action="{{ url_for('admin.audit_logs') }}" class="flex flex-wrap items-center gap-3">
       <div class="flex items-center gap-2">
-        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">Tanggal:</label>
-        <input type="date" name="date" value="{{ request.args.get('date', '') }}"
-          class="px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 bg-white">
+        <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Tanggal:</label>
+        <input type="date" name="date" value="{{ selected_date or '' }}"
+          class="px-3 py-1.5 text-xs border border-slate-300 rounded-md focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700 bg-white">
       </div>
       <div class="flex items-center gap-2">
-        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">Jenis:</label>
-        <select name="action" class="px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 bg-white">
+        <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Jenis Aksi:</label>
+        <select name="action" class="px-3 py-1.5 text-xs border border-slate-300 rounded-md focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700 bg-white">
           <option value="">Semua Aktivitas</option>
-          <option value="LOGIN" {% if request.args.get('action') == 'LOGIN' %}selected{% endif %}>LOGIN</option>
-          <option value="PICKUP" {% if request.args.get('action') == 'PICKUP' %}selected{% endif %}>PENJEMPUTAN</option>
-          <option value="CREATE" {% if request.args.get('action') == 'CREATE' %}selected{% endif %}>TAMBAH DATA</option>
-          <option value="DELETE" {% if request.args.get('action') == 'DELETE' %}selected{% endif %}>HAPUS DATA</option>
-          <option value="UPDATE" {% if request.args.get('action') == 'UPDATE' %}selected{% endif %}>UBAH DATA</option>
+          <option value="LOGIN" {% if selected_action == 'LOGIN' %}selected{% endif %}>LOGIN</option>
+          <option value="PICKUP" {% if selected_action == 'PICKUP' %}selected{% endif %}>PENJEMPUTAN</option>
+          <option value="CREATE" {% if selected_action == 'CREATE' %}selected{% endif %}>TAMBAH DATA</option>
+          <option value="DELETE" {% if selected_action == 'DELETE' %}selected{% endif %}>HAPUS DATA</option>
+          <option value="EDIT" {% if selected_action == 'EDIT' %}selected{% endif %}>UBAH DATA</option>
         </select>
       </div>
-      <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition">
-        <i data-lucide="filter" class="w-3.5 h-3.5"></i> Filter
+      <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-xs font-medium bg-slate-800 text-white hover:bg-slate-900 transition-colors">
+        <i data-lucide="filter" class="w-3.5 h-3.5"></i> Terapkan Filter
       </button>
-      {% if request.args.get('date') or request.args.get('action') %}
-      <a href="{{ url_for('admin.audit_logs') }}" class="text-xs text-slate-500 hover:text-rose-600 font-medium flex items-center gap-1">
+      {% if selected_date or selected_action %}
+      <a href="{{ url_for('admin.audit_logs') }}" class="text-xs text-slate-500 hover:text-red-700 font-medium flex items-center gap-1 ml-1">
         <i data-lucide="x" class="w-3.5 h-3.5"></i> Reset
       </a>
       {% endif %}
@@ -47,60 +47,66 @@
   </div>
 
   <!-- Audit Table -->
-  <div class="glass-panel rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-sm">
+  <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
     <div class="overflow-x-auto">
-      <table class="w-full text-left text-sm text-slate-600">
-        <thead class="text-xs font-bold uppercase bg-slate-50 text-slate-500 border-b border-slate-200">
+      <table class="w-full text-left text-sm text-slate-700">
+        <thead class="text-xs font-semibold uppercase bg-slate-50 text-slate-600 border-b border-slate-200">
           <tr>
-            <th class="py-3.5 px-4">Waktu (WIB)</th>
-            <th class="py-3.5 px-4">Aksi / Event</th>
-            <th class="py-3.5 px-4">Pengguna</th>
-            <th class="py-3.5 px-4">Peran</th>
-            <th class="py-3.5 px-4">Deskripsi / Detail</th>
-            <th class="py-3.5 px-4">Alamat IP</th>
+            <th class="py-3 px-4">Waktu (WIB)</th>
+            <th class="py-3 px-4">Aksi / Event</th>
+            <th class="py-3 px-4">Aktor Pengguna</th>
+            <th class="py-3 px-4">Peran Aktor</th>
+            <th class="py-3 px-4">Deskripsi / Detail Transaksi</th>
+            <th class="py-3 px-4">Alamat IP</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 font-mono text-xs">
+        <tbody class="divide-y divide-slate-100 text-xs">
           {% for log in logs %}
-          <tr class="hover:bg-slate-50/70 transition">
-            <td class="py-3.5 px-4 text-slate-500 whitespace-nowrap">
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="py-3 px-4 text-slate-500 whitespace-nowrap tabular-nums">
               {{ log.created_at|format_datetime_id }}
             </td>
-            <td class="py-3.5 px-4">
-              <span class="px-2 py-0.5 rounded font-bold uppercase text-[11px]
-                {% if 'LOGIN' in log.action %}bg-blue-50 text-blue-700 border border-blue-200
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded font-mono font-semibold uppercase text-[11px]
+                {% if 'LOGIN' in log.action %}bg-slate-100 text-slate-800 border border-slate-200
                 {% elif 'PICKUP' in log.action %}bg-amber-50 text-amber-800 border border-amber-200
-                {% elif 'CREATE' in log.action %}bg-emerald-50 text-emerald-700 border border-emerald-200
-                {% elif 'DELETE' in log.action %}bg-rose-50 text-rose-700 border border-rose-200
-                {% else %}bg-slate-100 text-slate-700{% endif %}">
+                {% elif 'CREATE' in log.action %}bg-emerald-50 text-emerald-800 border border-emerald-200
+                {% elif 'DELETE' in log.action %}bg-red-50 text-red-700 border border-red-200
+                {% else %}bg-slate-100 text-slate-700 border border-slate-200{% endif %}">
                 {{ log.action }}
               </span>
             </td>
-            <td class="py-3.5 px-4 font-sans text-xs">
+            <td class="py-3 px-4">
               {% if log.user %}
-                <span class="font-bold text-slate-800">{{ log.user.full_name }}</span>
-                <span class="text-slate-400 text-[11px] block">@{{ log.user.username }}</span>
+                <span class="font-medium text-slate-900 block">{{ log.user.full_name }}</span>
+                <span class="text-slate-400 font-mono text-[11px]">@{{ log.user.username }}</span>
               {% else %}
-                <span class="text-slate-400 italic">Sistem</span>
+                <span class="text-slate-400 italic">Sistem Otomatis</span>
               {% endif %}
             </td>
-            <td class="py-3.5 px-4 font-sans text-xs">
+            <td class="py-3 px-4">
               {% if log.user %}
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold
-                  {% if log.user.role == 'admin' %}bg-purple-50 text-purple-700
-                  {% elif log.user.role == 'teacher' %}bg-teal-50 text-teal-700
-                  {% else %}bg-amber-50 text-amber-700{% endif %}">
-                  {{ log.user.role|upper }}
+                <span class="px-2 py-0.5 rounded text-[11px] font-medium
+                  {% if log.user.role == 'admin' %}bg-slate-100 text-slate-800 border border-slate-200
+                  {% elif log.user.role == 'teacher' %}bg-emerald-50 text-emerald-800 border border-emerald-200
+                  {% else %}bg-amber-50 text-amber-800 border border-amber-200{% endif %}">
+                  {% if log.user.role == 'admin' %}Administrator{% elif log.user.role == 'teacher' %}Guru Kelas{% else %}Orang Tua{% endif %}
                 </span>
               {% else %}
                 <span class="text-slate-400">—</span>
               {% endif %}
             </td>
-            <td class="py-3.5 px-4 font-sans text-xs text-slate-700">
+            <td class="py-3 px-4 text-slate-700 max-w-md">
               {{ log.details or '-' }}
             </td>
-            <td class="py-3.5 px-4 text-slate-400 text-[11px]">
+            <td class="py-3 px-4 font-mono text-slate-400 text-[11px]">
               {{ log.ip_address or '127.0.0.1' }}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="text-center py-8 text-slate-400 text-sm">
+              Tidak ada riwayat log audit yang sesuai.
             </td>
           </tr>
           {% endfor %}

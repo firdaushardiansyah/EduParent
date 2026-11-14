@@ -3,47 +3,48 @@
 {% block title %}Laporan Tumbuh Kembang — EduParent{% endblock %}
 
 {% block content_area %}
-<div class="space-y-6">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
   <!-- Header -->
-  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-    <div>
-      <div class="flex items-center gap-2 mb-1">
-        <a href="{{ url_for('parent.dashboard', child_id=selected_child.id) }}" class="text-xs text-brand-600 font-bold hover:underline flex items-center gap-1">
-          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Dashboard {{ selected_child.nickname }}
+  <div class="bg-white border border-slate-200 rounded-lg p-5">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div>
+        <a href="{{ url_for('parent.dashboard', child_id=selected_child.id) }}" class="text-xs text-emerald-800 font-medium hover:underline flex items-center gap-1 mb-1">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Kembali ke Dashboard {{ selected_child.nickname }}
         </a>
+        <h1 class="text-2xl font-bold text-slate-900">Analitik Capaian Tumbuh Kembang</h1>
+        <p class="text-xs text-slate-500 mt-0.5">Visualisasi capaian 4 pilar perkembangan anak usia dini (Radar Spider & Tren Historis)</p>
       </div>
-      <h1 class="font-heading text-2xl font-black text-slate-900">Analitik Capaian Tumbuh Kembang</h1>
-      <p class="text-xs text-slate-500 mt-0.5">Visualisasi 4 pilar perkembangan anak usia dini (Radar Spider & Tren Historis)</p>
-    </div>
 
-    <!-- Multi-child switcher if applicable -->
-    {% if children|length > 1 %}
-    <div class="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white border border-slate-200">
-      {% for ch in children %}
-        <a href="{{ url_for('parent.development_report', student_id=ch.id) }}"
-          class="px-3 py-1 rounded-xl text-xs font-bold transition {% if selected_child.id == ch.id %}bg-brand-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
-          {{ ch.nickname }}
-        </a>
-      {% endfor %}
+      <!-- Multi-child switcher if applicable -->
+      {% if children|length > 1 %}
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <span class="text-xs font-semibold text-slate-500 uppercase">Pilih Anak:</span>
+        {% for ch in children %}
+          <a href="{{ url_for('parent.development_report', student_id=ch.id) }}"
+            class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors {% if selected_child.id == ch.id %}bg-emerald-700 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+            {{ ch.nickname }}
+          </a>
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
   </div>
 
   <!-- Charts Bento Grid: Spider/Radar Chart (Left) + Growth Progression Line Chart (Right) -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
     <!-- Card 1: Spider / Radar Chart (Holistic Skills) -->
-    <div class="glass-panel p-6 rounded-3xl border border-slate-200/80 bg-white shadow-sm flex flex-col justify-between space-y-4">
+    <div class="bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-between space-y-4">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <div>
-          <h2 class="font-heading text-base font-bold text-slate-900 flex items-center gap-2">
-            <i data-lucide="radar" class="w-4 h-4 text-brand-600"></i> Diagram Radar Capaian Terkini
+          <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+            <i data-lucide="crosshair" class="w-4 h-4 text-emerald-700"></i> Diagram Radar Capaian Terkini
           </h2>
-          <p class="text-[11px] text-slate-500">Keseimbangan kompetensi 4 pilar stimulasi</p>
+          <p class="text-xs text-slate-500 mt-0.5">Keseimbangan kompetensi 4 pilar stimulasi</p>
         </div>
         {% if latest_score %}
-          <span class="px-2.5 py-1 rounded-full text-xs font-black bg-teal-50 text-teal-800 border border-teal-200">
+          <span class="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-200">
             Rata² {{ latest_score.average_score }} / 4
           </span>
         {% endif %}
@@ -57,36 +58,36 @@
         {% endif %}
       </div>
 
-      <div class="pt-2 border-t border-slate-100 flex items-center justify-around text-center text-[11px]">
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-around text-center text-xs">
         <div>
-          <span class="text-slate-400 block">Motorik Kasar</span>
-          <span class="font-bold text-teal-700">{{ latest_score.gross_motor_score if latest_score else '-' }} ({{ latest_score.gross_motor_label.code if latest_score else '' }})</span>
+          <span class="text-slate-400 block text-[10px] uppercase">Motorik Kasar</span>
+          <span class="font-semibold text-slate-900">{{ latest_score.gross_motor_score if latest_score else '-' }} ({{ latest_score.gross_motor_label.code if latest_score else '' }})</span>
         </div>
         <div>
-          <span class="text-slate-400 block">Motorik Halus</span>
-          <span class="font-bold text-purple-700">{{ latest_score.fine_motor_score if latest_score else '-' }} ({{ latest_score.fine_motor_label.code if latest_score else '' }})</span>
+          <span class="text-slate-400 block text-[10px] uppercase">Motorik Halus</span>
+          <span class="font-semibold text-slate-900">{{ latest_score.fine_motor_score if latest_score else '-' }} ({{ latest_score.fine_motor_label.code if latest_score else '' }})</span>
         </div>
         <div>
-          <span class="text-slate-400 block">Kognitif</span>
-          <span class="font-bold text-sky-700">{{ latest_score.cognitive_score if latest_score else '-' }} ({{ latest_score.cognitive_label.code if latest_score else '' }})</span>
+          <span class="text-slate-400 block text-[10px] uppercase">Kognitif</span>
+          <span class="font-semibold text-slate-900">{{ latest_score.cognitive_score if latest_score else '-' }} ({{ latest_score.cognitive_label.code if latest_score else '' }})</span>
         </div>
         <div>
-          <span class="text-slate-400 block">Sosial Emosional</span>
-          <span class="font-bold text-rose-700">{{ latest_score.social_emotional_score if latest_score else '-' }} ({{ latest_score.social_emotional_label.code if latest_score else '' }})</span>
+          <span class="text-slate-400 block text-[10px] uppercase">Sosial Emosional</span>
+          <span class="font-semibold text-slate-900">{{ latest_score.social_emotional_score if latest_score else '-' }} ({{ latest_score.social_emotional_label.code if latest_score else '' }})</span>
         </div>
       </div>
     </div>
 
     <!-- Card 2: Growth Trendlines (Line Chart) -->
-    <div class="glass-panel p-6 rounded-3xl border border-slate-200/80 bg-white shadow-sm flex flex-col justify-between space-y-4">
+    <div class="bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-between space-y-4">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <div>
-          <h2 class="font-heading text-base font-bold text-slate-900 flex items-center gap-2">
-            <i data-lucide="trending-up" class="w-4 h-4 text-warm-600"></i> Tren Progres Perkembangan
+          <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+            <i data-lucide="trending-up" class="w-4 h-4 text-emerald-700"></i> Tren Progres Perkembangan
           </h2>
-          <p class="text-[11px] text-slate-500">Perkembangan nilai rata-rata dari waktu ke waktu</p>
+          <p class="text-xs text-slate-500 mt-0.5">Riwayat perkembangan skor rata-rata dari waktu ke waktu</p>
         </div>
-        <span class="text-xs font-semibold text-slate-500">Skala 1 - 4</span>
+        <span class="text-xs font-medium text-slate-500">Skala 1 - 4</span>
       </div>
 
       <div class="relative w-full h-72 flex items-center justify-center">
@@ -97,33 +98,29 @@
         {% endif %}
       </div>
 
-      <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-        <span class="flex items-center gap-1.5">
-          <span class="w-3 h-3 rounded-full bg-brand-600"></span> Nilai Rata-rata
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+        <span class="flex items-center gap-1.5 font-medium text-slate-700">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-700"></span> Nilai Capaian
         </span>
-        <span class="text-[11px] italic">Target: Konsisten di level BSH (3) & BSB (4)</span>
+        <span class="text-[11px]">Standar Nasional: Tingkat BSH (3) & BSB (4)</span>
       </div>
     </div>
 
   </div>
 
   <!-- Standards Reference Cards -->
-  <div class="glass-panel p-5 rounded-3xl border border-slate-200/80 bg-white shadow-sm space-y-3">
-    <h3 class="font-heading text-sm font-bold text-slate-900">Indikator Tingkat Pencapaian Standar PAUD</h3>
+  <div class="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
+    <h3 class="text-sm font-semibold text-slate-900">Indikator Tingkat Pencapaian Standar PAUD</h3>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
       {% for key, val in score_labels.items() %}
-      <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+      <div class="p-3 rounded-md bg-slate-50 border border-slate-200 space-y-1">
         <div class="flex items-center justify-between">
-          <span class="font-extrabold text-slate-900">{{ key }} — {{ val.code }}</span>
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded
-            {% if key == 4 %}bg-emerald-100 text-emerald-800
-            {% elif key == 3 %}bg-teal-100 text-teal-800
-            {% elif key == 2 %}bg-amber-100 text-amber-800
-            {% else %}bg-rose-100 text-rose-800{% endif %}">
+          <span class="font-bold text-slate-900">{{ key }} — {{ val.code }}</span>
+          <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-700">
             Skor {{ key }}
           </span>
         </div>
-        <span class="font-bold text-slate-700 block text-[11px]">{{ val.name }}</span>
+        <span class="font-medium text-slate-800 block text-[11px]">{{ val.name }}</span>
         <p class="text-[11px] text-slate-500 leading-normal">{{ val.desc }}</p>
       </div>
       {% endfor %}
@@ -131,52 +128,52 @@
   </div>
 
   <!-- Narrative Evaluation History List -->
-  <div class="glass-panel p-6 rounded-3xl border border-slate-200/80 bg-white shadow-sm space-y-4">
-    <h3 class="font-heading text-lg font-black text-slate-900">Riwayat Catatan Naratif Guru Kelas</h3>
+  <div class="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
+    <h3 class="text-base font-semibold text-slate-900">Riwayat Catatan Naratif Guru Kelas</h3>
 
     <div class="space-y-4">
       {% for s in scores %}
-      <div class="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/60 space-y-3">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-200/60 pb-2">
+      <div class="p-4 rounded-md bg-slate-50 border border-slate-200 space-y-3">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-2">
           <div>
-            <span class="font-bold text-slate-900 text-sm">Evaluasi Tanggal {{ s.evaluation_date|format_date_id }}</span>
+            <span class="font-semibold text-slate-900 text-sm">Evaluasi Tanggal {{ s.evaluation_date|format_date_id }}</span>
             <span class="text-xs text-slate-500 block">Penilai: {{ s.teacher.full_name }}</span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-teal-100 text-teal-800 border border-teal-200">
+            <span class="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-white text-slate-800 border border-slate-200">
               Skor Rata-Rata: {{ s.average_score }} / 4
             </span>
           </div>
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-          <div class="bg-white p-2 rounded-xl border border-slate-100">
-            <span class="text-slate-400 block text-[10px]">Motorik Kasar</span>
-            <span class="font-bold text-slate-800">{{ s.gross_motor_score }} — {{ s.gross_motor_label.code }}</span>
+          <div class="bg-white p-2 rounded-md border border-slate-200">
+            <span class="text-slate-400 block text-[10px] uppercase">Motorik Kasar</span>
+            <span class="font-semibold text-slate-900">{{ s.gross_motor_score }} — {{ s.gross_motor_label.code }}</span>
           </div>
-          <div class="bg-white p-2 rounded-xl border border-slate-100">
-            <span class="text-slate-400 block text-[10px]">Motorik Halus</span>
-            <span class="font-bold text-slate-800">{{ s.fine_motor_score }} — {{ s.fine_motor_label.code }}</span>
+          <div class="bg-white p-2 rounded-md border border-slate-200">
+            <span class="text-slate-400 block text-[10px] uppercase">Motorik Halus</span>
+            <span class="font-semibold text-slate-900">{{ s.fine_motor_score }} — {{ s.fine_motor_label.code }}</span>
           </div>
-          <div class="bg-white p-2 rounded-xl border border-slate-100">
-            <span class="text-slate-400 block text-[10px]">Kognitif & Bahasa</span>
-            <span class="font-bold text-slate-800">{{ s.cognitive_score }} — {{ s.cognitive_label.code }}</span>
+          <div class="bg-white p-2 rounded-md border border-slate-200">
+            <span class="text-slate-400 block text-[10px] uppercase">Kognitif & Bahasa</span>
+            <span class="font-semibold text-slate-900">{{ s.cognitive_score }} — {{ s.cognitive_label.code }}</span>
           </div>
-          <div class="bg-white p-2 rounded-xl border border-slate-100">
-            <span class="text-slate-400 block text-[10px]">Sosial Emosional</span>
-            <span class="font-bold text-slate-800">{{ s.social_emotional_score }} — {{ s.social_emotional_label.code }}</span>
+          <div class="bg-white p-2 rounded-md border border-slate-200">
+            <span class="text-slate-400 block text-[10px] uppercase">Sosial Emosional</span>
+            <span class="font-semibold text-slate-900">{{ s.social_emotional_score }} — {{ s.social_emotional_label.code }}</span>
           </div>
         </div>
 
         {% if s.teacher_comments %}
-        <div class="p-3 bg-amber-50/70 border border-amber-100 rounded-xl text-xs">
-          <span class="font-bold text-amber-900 block mb-0.5">Catatan & Saran Guru:</span>
+        <div class="p-3 bg-amber-50/50 border border-amber-200 rounded-md text-xs">
+          <span class="font-semibold text-amber-900 block mb-0.5">Catatan & Saran Guru:</span>
           <p class="text-slate-700 italic leading-relaxed">"{{ s.teacher_comments }}"</p>
         </div>
         {% endif %}
       </div>
       {% else %}
-      <div class="text-center py-6 text-slate-400 text-xs italic">
+      <div class="text-center py-6 text-slate-400 text-xs">
         Belum ada riwayat penilaian evaluasi untuk {{ selected_child.nickname }}.
       </div>
       {% endfor %}
@@ -189,7 +186,7 @@
 {% block scripts %}
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    // 1. Radar / Spider Chart Initialization
+    // 1. Radar / Spider Chart
     const radarCtx = document.getElementById('radarChart');
     if (radarCtx) {
       const radarLabels = {{ radar_data.labels|tojson }};
@@ -203,13 +200,13 @@
             label: 'Capaian Saat Ini',
             data: radarScores,
             fill: true,
-            backgroundColor: 'rgba(13, 148, 136, 0.25)',
-            borderColor: '#0D9488',
-            pointBackgroundColor: '#0D9488',
+            backgroundColor: 'rgba(4, 120, 87, 0.15)',
+            borderColor: '#047857',
+            pointBackgroundColor: '#047857',
             pointBorderColor: '#fff',
             pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: '#0D9488',
-            borderWidth: 2.5
+            pointHoverBorderColor: '#047857',
+            borderWidth: 2
           }]
         },
         options: {
@@ -217,10 +214,10 @@
           maintainAspectRatio: false,
           scales: {
             r: {
-              angleLines: { color: 'rgba(148, 163, 184, 0.2)' },
-              grid: { color: 'rgba(148, 163, 184, 0.2)' },
+              angleLines: { color: 'rgba(226, 232, 240, 0.8)' },
+              grid: { color: 'rgba(226, 232, 240, 0.8)' },
               pointLabels: {
-                font: { size: 11, family: 'Plus Jakarta Sans', weight: '600' },
+                font: { size: 11, family: 'Inter', weight: '500' },
                 color: '#334155'
               },
               suggestedMin: 0,
@@ -242,7 +239,7 @@
       });
     }
 
-    // 2. Growth Progression Line Chart Initialization
+    // 2. Growth Progression Line Chart
     const lineCtx = document.getElementById('lineChart');
     if (lineCtx) {
       const lineDates = {{ line_chart_data.dates|tojson }};
@@ -260,49 +257,49 @@
             {
               label: 'Skor Rata-Rata',
               data: lineAverages.length ? lineAverages : [3],
-              borderColor: '#0D9488',
-              backgroundColor: 'rgba(13, 148, 136, 0.1)',
-              tension: 0.3,
+              borderColor: '#047857',
+              backgroundColor: 'rgba(4, 120, 87, 0.08)',
+              tension: 0.2,
               fill: true,
-              borderWidth: 3,
-              pointRadius: 5,
-              pointBackgroundColor: '#0D9488'
+              borderWidth: 2.5,
+              pointRadius: 4,
+              pointBackgroundColor: '#047857'
             },
             {
               label: 'Motorik Kasar',
               data: lineGross.length ? lineGross : [3],
-              borderColor: '#10B981',
-              borderDash: [5, 5],
+              borderColor: '#64748B',
+              borderDash: [4, 4],
               tension: 0.2,
               borderWidth: 1.5,
-              pointRadius: 3
+              pointRadius: 2.5
             },
             {
               label: 'Motorik Halus',
               data: lineFine.length ? lineFine : [3],
-              borderColor: '#A855F7',
-              borderDash: [5, 5],
+              borderColor: '#78716C',
+              borderDash: [4, 4],
               tension: 0.2,
               borderWidth: 1.5,
-              pointRadius: 3
+              pointRadius: 2.5
             },
             {
               label: 'Kognitif',
               data: lineCognitive.length ? lineCognitive : [3],
               borderColor: '#0284C7',
-              borderDash: [5, 5],
+              borderDash: [4, 4],
               tension: 0.2,
               borderWidth: 1.5,
-              pointRadius: 3
+              pointRadius: 2.5
             },
             {
               label: 'Sosial Emosional',
               data: lineSocial.length ? lineSocial : [3],
-              borderColor: '#F43F5E',
-              borderDash: [5, 5],
+              borderColor: '#D97706',
+              borderDash: [4, 4],
               tension: 0.2,
               borderWidth: 1.5,
-              pointRadius: 3
+              pointRadius: 2.5
             }
           ]
         },
@@ -320,7 +317,7 @@
                   return map[val] || val;
                 }
               },
-              grid: { color: 'rgba(148, 163, 184, 0.15)' }
+              grid: { color: 'rgba(241, 245, 249, 1)' }
             },
             x: {
               grid: { display: false }
@@ -331,7 +328,7 @@
               position: 'top',
               labels: {
                 boxWidth: 12,
-                font: { size: 10, family: 'Plus Jakarta Sans' }
+                font: { size: 10, family: 'Inter' }
               }
             }
           }

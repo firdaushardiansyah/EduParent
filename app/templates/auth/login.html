@@ -3,114 +3,109 @@
 {% block title %}Masuk — EduParent{% endblock %}
 
 {% block content_area %}
-<div class="min-h-[calc(100vh-12rem)] flex flex-col justify-center py-6 sm:px-6 lg:px-8">
+<div class="min-h-[calc(100vh-10rem)] flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8">
   <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
-    <div class="inline-flex p-3 rounded-2xl bg-gradient-to-tr from-brand-600 to-teal-400 shadow-lg shadow-brand-500/25 mb-4">
-      <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Logo" class="w-12 h-12">
+    <div class="w-12 h-12 rounded-lg bg-emerald-700 text-white font-bold text-lg flex items-center justify-center mx-auto mb-3 shadow-sm">
+      EP
     </div>
-    <h2 class="font-heading text-3xl font-extrabold tracking-tight text-slate-900">
-      Masuk ke <span class="text-brand-600">EduParent</span>
-    </h2>
-    <p class="mt-2 text-sm text-slate-600">
-      Portal Terpadu Tumbuh Kembang & Keamanan Penjemputan Anak PAUD/TK
+    <h1 class="text-2xl font-bold tracking-tight text-slate-900">
+      Masuk ke EduParent
+    </h1>
+    <p class="mt-1 text-xs text-slate-500">
+      Sistem Monitoring Tumbuh Kembang & Verifikasi Penjemputan PAUD/TK
     </p>
   </div>
 
-  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-    <div class="glass-panel p-8 sm:rounded-3xl border border-white/80 shadow-xl shadow-slate-200/60 relative overflow-hidden">
-      <!-- Decorative Pastel Glow -->
-      <div class="absolute -top-12 -right-12 w-32 h-32 bg-brand-300/30 rounded-full blur-2xl pointer-events-none"></div>
-      <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-warm-300/30 rounded-full blur-2xl pointer-events-none"></div>
+  <div class="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
+    <div class="bg-white border border-slate-200 rounded-lg p-6 sm:p-8 shadow-sm">
 
-      <form action="{{ url_for('auth.login') }}" method="POST" class="space-y-5 relative z-10" id="loginForm">
+      <form action="{{ url_for('auth.login') }}" method="POST" class="space-y-4" id="loginForm">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         {%- with messages = get_flashed_messages(with_categories=true) -%}
           {%- for category, message in messages -%}
-            <div role="alert" class="flex items-center gap-2 p-3 rounded-xl text-sm font-medium
+            <div role="alert" class="flex items-center gap-2 p-3 rounded-md text-xs font-medium
               {% if category == 'error' or category == 'danger' %}bg-red-50 text-red-700 border border-red-200
               {% elif category == 'success' %}bg-emerald-50 text-emerald-700 border border-emerald-200
               {% else %}bg-sky-50 text-sky-700 border border-sky-200{% endif %}">
               <i data-lucide="{% if category == 'error' or category == 'danger' %}alert-circle{% elif category == 'success' %}check-circle{% else %}info{% endif %}" class="w-4 h-4 shrink-0"></i>
-              {{ message }}
+              <span>{{ message }}</span>
             </div>
           {%- endfor -%}
         {%- endwith -%}
 
         <div>
-          <label for="username" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+          <label for="username" class="block text-sm font-medium text-slate-700 mb-1.5">
             Nama Pengguna (Username)
           </label>
-          <div class="relative rounded-xl shadow-sm">
-            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
               <i data-lucide="user" class="w-4 h-4"></i>
             </div>
             <input type="text" name="username" id="username" required
               autocomplete="username" autofocus
-              class="block w-full pl-10 pr-3 py-2.5 sm:text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white/90 placeholder-slate-400 transition"
+              class="w-full pl-9 pr-3.5 py-2 text-sm border border-slate-300 rounded-md bg-white text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700"
               placeholder="contoh: guru_rina">
           </div>
         </div>
 
         <div>
-          <label for="password" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+          <label for="password" class="block text-sm font-medium text-slate-700 mb-1.5">
             Kata Sandi
           </label>
-          <div class="relative rounded-xl shadow-sm">
-            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
               <i data-lucide="lock" class="w-4 h-4"></i>
             </div>
             <input type="password" name="password" id="password" required
               autocomplete="current-password"
-              class="block w-full pl-10 pr-10 py-2.5 sm:text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white/90 placeholder-slate-400 transition"
+              class="w-full pl-9 pr-10 py-2 text-sm border border-slate-300 rounded-md bg-white text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700"
               placeholder="••••••••">
             <button type="button" onclick="togglePassword()" id="togglePwdBtn"
-              class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition"
               aria-label="Tampilkan atau sembunyikan kata sandi">
               <i data-lucide="eye" id="eyeIcon" class="w-4 h-4"></i>
             </button>
           </div>
         </div>
 
-        <div class="flex items-center justify-between text-sm">
+        <div class="flex items-center justify-between text-xs pt-1">
           <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" name="remember" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 border-slate-300">
-            <span class="text-xs text-slate-600">Ingat sesi saya</span>
+            <input type="checkbox" name="remember" class="rounded text-emerald-700 focus:ring-emerald-700 border-slate-300">
+            <span class="text-slate-600">Ingat sesi saya</span>
           </label>
-          <button type="button" onclick="window.location.href='mailto:admin@eduparent.sch.id?subject=Bantuan Akses Login EduParent'" class="text-xs text-brand-600 font-medium hover:underline">Bantuan akses?</button>
+          <a href="mailto:admin@eduparent.sch.id" class="text-emerald-700 font-medium hover:underline">Bantuan akses?</a>
         </div>
 
-        <div>
+        <div class="pt-2">
           <button type="submit" id="btnSubmit"
-            class="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all transform hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
+            class="w-full flex justify-center items-center gap-2 py-2.5 px-4 rounded-md text-sm font-medium text-white bg-emerald-700 hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
             <i data-lucide="log-in" class="w-4 h-4" id="btnIcon"></i>
-            <span id="btnText">Masuk Sekarang</span>
+            <span id="btnText">Masuk ke Sistem</span>
           </button>
         </div>
       </form>
 
-      {% if config.DEBUG %}
-      <!-- Quick Demo Login Switcher (hanya tampil saat DEBUG=True) -->
-      <div class="mt-8 pt-6 border-t border-slate-100">
-        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 text-center mb-3">
-          ⚡ Akses Instan Akun Pengujian (Demo)
+      <!-- Quick Demo Login Switcher -->
+      <div class="mt-6 pt-5 border-t border-slate-100">
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-center mb-2.5">
+          Akses Akun Uji Coba (Demo)
         </p>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <button type="button" onclick="fillCredentials('admin', 'admin123')" aria-label="Login sebagai Admin"
-            class="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200/60 transition">
-            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Admin
+          <button type="button" onclick="fillCredentials('admin', 'admin123')"
+            class="flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md bg-slate-50 text-slate-800 hover:bg-slate-100 border border-slate-200 transition-colors">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-slate-600"></i> Admin
           </button>
-          <button type="button" onclick="fillCredentials('guru_rina', 'guru123')" aria-label="Login sebagai Guru TK-A"
-            class="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-200/60 transition">
-            <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i> Guru TK-A
+          <button type="button" onclick="fillCredentials('guru_rina', 'guru123')"
+            class="flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md bg-slate-50 text-slate-800 hover:bg-slate-100 border border-slate-200 transition-colors">
+            <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-emerald-700"></i> Guru TK-A
           </button>
-          <button type="button" onclick="fillCredentials('ortu_dewi', 'ortu123')" aria-label="Login sebagai Orang Tua"
-            class="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200/60 transition">
-            <i data-lucide="heart" class="w-3.5 h-3.5"></i> Orang Tua
+          <button type="button" onclick="fillCredentials('ortu_dewi', 'ortu123')"
+            class="flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md bg-slate-50 text-slate-800 hover:bg-slate-100 border border-slate-200 transition-colors">
+            <i data-lucide="heart" class="w-3.5 h-3.5 text-amber-600"></i> Orang Tua
           </button>
         </div>
       </div>
-      {% endif %}
 
     </div>
   </div>
@@ -135,7 +130,6 @@
     lucide.createIcons();
   }
 
-  // Loading state & prevent double submit
   document.getElementById('loginForm').addEventListener('submit', function() {
     const btn = document.getElementById('btnSubmit');
     const icon = document.getElementById('btnIcon');

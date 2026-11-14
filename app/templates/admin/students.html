@@ -1,131 +1,149 @@
 {% extends "base.html" %}
 
-{% block title %}Master Data Siswa — EduParent{% endblock %}
+{% block title %}Data Siswa & Wali Murid — EduParent{% endblock %}
 
 {% block content_area %}
-<div class="space-y-6">
+<div class="p-6 space-y-6">
 
   <!-- Header with Actions -->
   <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
     <div>
-      <h1 class="font-heading text-2xl font-black text-slate-900">Data Siswa & Pemetaan Wali Murid</h1>
-      <p class="text-xs text-slate-500 mt-1">Kelola data anak didik PAUD/TK dan hubungkan dengan akun orang tua</p>
+      <h1 class="text-2xl font-bold text-slate-900">Data Siswa & Pemetaan Wali Murid</h1>
+      <p class="text-sm text-slate-500 mt-1">Kelola data anak didik PAUD/TK dan hubungkan dengan akun orang tua</p>
     </div>
-    <button onclick="openModal('modal-add-student')" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white shadow-sm transition">
+    <button onclick="openModal('modal-add-student')" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md bg-emerald-700 hover:bg-emerald-800 text-white transition-colors">
       <i data-lucide="user-plus" class="w-4 h-4"></i> Tambah Siswa Baru
     </button>
   </div>
 
-  <!-- Filter Bar -->
-  <div class="glass-panel p-4 rounded-2xl border border-slate-200/80 bg-white flex flex-wrap items-center justify-between gap-3">
+  <!-- Filter & Search Bar -->
+  <div class="bg-white border border-slate-200 rounded-lg p-4 flex flex-wrap items-center justify-between gap-3">
     <!-- Search Bar -->
-    <form method="GET" action="{{ url_for('admin.students') }}" class="flex items-center gap-2 flex-1 min-w-[200px] max-w-sm">
+    <form method="GET" action="{{ url_for('admin.students') }}" class="flex items-center gap-2 flex-1 min-w-[240px] max-w-sm">
       <div class="relative flex-1">
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-          <i data-lucide="search" class="w-3.5 h-3.5"></i>
+          <i data-lucide="search" class="w-4 h-4"></i>
         </div>
-        <input type="text" name="q" value="{{ request.args.get('q', '') }}" placeholder="Cari nama siswa..."
-          class="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 bg-white">
+        <input type="text" name="q" value="{{ search_query or '' }}" placeholder="Cari nama atau panggilan siswa..."
+          class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-md focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700 bg-white">
       </div>
       {% if selected_class_id %}<input type="hidden" name="class_id" value="{{ selected_class_id }}">{% endif %}
+      <button type="submit" class="px-3.5 py-2 text-sm font-medium rounded-md bg-slate-800 hover:bg-slate-900 text-white transition-colors">
+        Cari
+      </button>
+      {% if search_query %}
+      <a href="{{ url_for('admin.students', class_id=selected_class_id) }}" class="p-2 text-slate-400 hover:text-slate-600" title="Reset Pencarian">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </a>
+      {% endif %}
     </form>
+
+    <!-- Class Filter Buttons -->
     <div class="flex items-center gap-2 flex-wrap">
-      <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Kelas:</span>
+      <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kelas:</span>
       <div class="flex flex-wrap gap-1.5">
-        <a href="{{ url_for('admin.students') }}" class="px-3 py-1 rounded-lg text-xs font-semibold {% if not selected_class_id %}bg-brand-600 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %} transition">
-          Semua
+        <a href="{{ url_for('admin.students', q=search_query) }}" class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors {% if not selected_class_id %}bg-emerald-700 text-white{% else %}bg-white border border-slate-300 text-slate-700 hover:bg-slate-50{% endif %}">
+          Semua Kelas
         </a>
         {% for c in classes %}
-          <a href="{{ url_for('admin.students', class_id=c.id) }}" class="px-3 py-1 rounded-lg text-xs font-semibold {% if selected_class_id == c.id %}bg-brand-600 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %} transition">
+          <a href="{{ url_for('admin.students', class_id=c.id, q=search_query) }}" class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors {% if selected_class_id == c.id %}bg-emerald-700 text-white{% else %}bg-white border border-slate-300 text-slate-700 hover:bg-slate-50{% endif %}">
             {{ c.name }}
           </a>
         {% endfor %}
       </div>
+      <span class="text-xs text-slate-500 font-medium ml-2">{{ students|length }} Siswa</span>
     </div>
-    <span class="text-xs text-slate-500 font-medium whitespace-nowrap">{{ students|length }} siswa</span>
   </div>
 
   <!-- Students Table -->
-  <div class="glass-panel rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-sm">
+  <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
     <div class="overflow-x-auto">
-      <table class="w-full text-left text-sm text-slate-600">
-        <thead class="text-xs font-bold uppercase bg-slate-50 text-slate-500 border-b border-slate-200">
+      <table class="w-full text-left text-sm text-slate-700">
+        <thead class="text-xs font-semibold uppercase bg-slate-50 text-slate-600 border-b border-slate-200">
           <tr>
-            <th class="py-3.5 px-4">Foto & Nama Siswa</th>
-            <th class="py-3.5 px-4">Kelas</th>
-            <th class="py-3.5 px-4">Tanggal Lahir / Usia</th>
-            <th class="py-3.5 px-4">Jenis Kelamin</th>
-            <th class="py-3.5 px-4">Wali Murid Terdaftar</th>
-            <th class="py-3.5 px-4 text-center">Status</th>
-            <th class="py-3.5 px-4 text-right">Aksi</th>
+            <th class="py-3 px-4">Foto & Nama Siswa</th>
+            <th class="py-3 px-4">Kelas</th>
+            <th class="py-3 px-4">Tanggal Lahir & Usia</th>
+            <th class="py-3 px-4">Jenis Kelamin</th>
+            <th class="py-3 px-4">Wali Murid Terdaftar</th>
+            <th class="py-3 px-4 text-center">Status</th>
+            <th class="py-3 px-4 text-right">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
           {% for s in students %}
-          <tr class="hover:bg-slate-50/70 transition">
-            <td class="py-3.5 px-4 flex items-center gap-3">
-              <img src="{{ s.photo_url or url_for('static', filename='img/avatar_arkan.svg') }}" class="w-10 h-10 rounded-full border border-slate-200 object-cover shadow-sm">
-              <div>
-                <span class="font-bold text-slate-900 block">{{ s.full_name }}</span>
-                <span class="text-xs text-slate-500">Nama Panggilan: <span class="font-semibold text-brand-600">{{ s.nickname }}</span></span>
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="py-3 px-4">
+              <div class="flex items-center gap-3">
+                <img src="{{ s.photo_url or url_for('static', filename='img/avatar_arkan.svg') }}" class="w-9 h-9 rounded-md border border-slate-200 object-cover">
+                <div>
+                  <span class="font-semibold text-slate-900 block">{{ s.full_name }}</span>
+                  <span class="text-xs text-slate-500">Panggilan: <span class="font-medium text-emerald-800">{{ s.nickname }}</span></span>
+                </div>
               </div>
             </td>
-            <td class="py-3.5 px-4">
-              <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200">
+            <td class="py-3 px-4">
+              <span class="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200">
                 {{ s.classroom.name }}
               </span>
             </td>
-            <td class="py-3.5 px-4 text-xs">
-              <span class="font-medium text-slate-800 block">{{ s.dob|format_date_id }}</span>
-              <span class="text-slate-500 font-semibold">{{ s.age }}</span>
+            <td class="py-3 px-4 text-xs">
+              <span class="font-medium text-slate-900 block">{{ s.dob|format_date_id }}</span>
+              <span class="text-slate-500">{{ s.age }}</span>
             </td>
-            <td class="py-3.5 px-4 text-xs font-semibold">
+            <td class="py-3 px-4 text-xs font-medium">
               {% if s.gender == 'L' %}
-                <span class="inline-flex items-center gap-1 text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200">
-                  <i data-lucide="user" class="w-3 h-3"></i> Laki-laki
+                <span class="inline-flex items-center gap-1 text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                  <i data-lucide="user" class="w-3 h-3 text-slate-500"></i> Laki-laki
                 </span>
               {% else %}
-                <span class="inline-flex items-center gap-1 text-pink-700 bg-pink-50 px-2 py-0.5 rounded-md border border-pink-200">
-                  <i data-lucide="user" class="w-3 h-3"></i> Perempuan
+                <span class="inline-flex items-center gap-1 text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                  <i data-lucide="user" class="w-3 h-3 text-slate-500"></i> Perempuan
                 </span>
               {% endif %}
             </td>
-            <td class="py-3.5 px-4 text-xs">
+            <td class="py-3 px-4 text-xs">
               {% if s.parent %}
-                <div class="flex items-center gap-1.5 font-bold text-slate-800">
-                  <i data-lucide="user-check" class="w-3.5 h-3.5 text-brand-600"></i>
+                <div class="font-medium text-slate-900 flex items-center gap-1.5">
+                  <i data-lucide="user-check" class="w-3.5 h-3.5 text-emerald-700"></i>
                   {{ s.parent.full_name }}
                 </div>
-                <span class="text-slate-400 block text-[11px]">{{ s.parent.phone_number or 'No phone' }}</span>
+                <span class="text-slate-500 block text-[11px]">{{ s.parent.phone_number or '-' }}</span>
               {% else %}
-                <span class="inline-flex items-center gap-1 text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200 text-[11px] font-semibold">
+                <span class="inline-flex items-center gap-1 text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 text-[11px] font-medium">
                   <i data-lucide="alert-circle" class="w-3 h-3"></i> Belum Dihubungkan
                 </span>
               {% endif %}
             </td>
-            <td class="py-3.5 px-4 text-center">
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
-              </span>
+            <td class="py-3 px-4 text-center">
+              {% if s.is_active %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-700"></span> Aktif
+                </span>
+              {% else %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Nonaktif
+                </span>
+              {% endif %}
             </td>
-            <td class="py-3.5 px-4 text-right">
-              <div class="flex items-center justify-end gap-1.5">
-                <button onclick="openEditStudentModal({{ s.id }}, '{{ s.full_name|replace("'", "\\'") }}', '{{ s.nickname|replace("'", "\\'") }}', '{{ s.dob.strftime('%Y-%m-%d') }}', '{{ s.gender }}', {{ s.class_id }}, {{ s.parent_id or 'null' }})"
-                  class="p-1.5 rounded-lg text-slate-500 hover:text-brand-600 hover:bg-brand-50 transition" title="Ubah">
+            <td class="py-3 px-4 text-right">
+              <div class="flex items-center justify-end gap-1">
+                <button onclick="openEditStudentModal({{ s.id }}, '{{ s.full_name|replace("'", "\\'") }}', '{{ s.nickname|replace("'", "\\'") }}', '{{ s.dob.strftime('%Y-%m-%d') }}', '{{ s.gender }}', {{ s.class_id }}, {{ s.parent_id or 'null' }}, {{ 'true' if s.is_active else 'false' }})"
+                  class="p-1.5 rounded-md text-slate-600 hover:text-emerald-700 hover:bg-slate-100 transition-colors" title="Ubah Data">
                   <i data-lucide="edit-3" class="w-4 h-4"></i>
                 </button>
-                <form action="{{ url_for('admin.delete_student', student_id=s.id) }}" method="POST" onsubmit="return confirm('Hapus siswa {{ s.full_name }} dari sistem? Seluruh jurnal dan rekaman terkait akan ikut terhapus.');" class="inline">
-                  <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Hapus">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                  </button>
-                </form>
+                <button type="button" onclick="confirmDelete('{{ url_for('admin.delete_student', student_id=s.id) }}', '{{ s.full_name|replace("'", "\\'") }}', 'Data Siswa')"
+                  class="p-1.5 rounded-md text-slate-400 hover:text-red-700 hover:bg-red-50 transition-colors" title="Hapus Data">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
               </div>
             </td>
           </tr>
           {% else %}
           <tr>
-            <td colspan="6" class="text-center py-8 text-slate-400 text-sm">
-              Belum ada data siswa untuk kelas ini.
+            <td colspan="7" class="text-center py-10 text-slate-400 text-sm">
+              <i data-lucide="users" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+              Tidak ada data siswa yang cocok dengan filter.
             </td>
           </tr>
           {% endfor %}
@@ -137,47 +155,48 @@
 </div>
 
 <!-- Modal: Tambah Siswa Baru -->
-<div id="modal-add-student" class="modal-dialog hidden fixed inset-0 z-50 overflow-y-auto items-center justify-center p-4">
-  <div class="modal-overlay fixed inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
-  <div class="modal-content relative bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 z-10 space-y-5">
-    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-      <h3 class="font-heading text-lg font-black text-slate-900">Daftarkan Siswa Baru</h3>
-      <button onclick="closeModal('modal-add-student')" class="text-slate-400 hover:text-slate-600">
+<div id="modal-add-student" class="modal-dialog hidden fixed inset-0 z-50 bg-slate-900/40 flex items-center justify-center p-4">
+  <div class="bg-white border border-slate-200 rounded-lg max-w-xl w-full p-6 shadow-sm max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+      <h3 class="text-base font-semibold text-slate-900">Daftarkan Siswa Baru</h3>
+      <button type="button" onclick="closeModal('modal-add-student')" class="text-slate-400 hover:text-slate-600">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
     </div>
 
-    <form action="{{ url_for('admin.create_student') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+    <form action="{{ url_for('admin.create_student') }}" method="POST" enctype="multipart/form-data" class="mt-4 space-y-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
       <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Nama Lengkap Anak</label>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Nama Lengkap Anak *</label>
         <input type="text" name="full_name" required placeholder="contoh: Muhammad Arkan Al-Ghifari"
-          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Nama Panggilan</label>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Nama Panggilan *</label>
           <input type="text" name="nickname" required placeholder="Arkan"
-            class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+            class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
         </div>
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Tanggal Lahir</label>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Tanggal Lahir *</label>
           <input type="date" name="dob" required
-            class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+            class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Jenis Kelamin</label>
-          <select name="gender" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Jenis Kelamin *</label>
+          <select name="gender" class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
             <option value="L">Laki-laki</option>
             <option value="P">Perempuan</option>
           </select>
         </div>
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Kelas</label>
-          <select name="class_id" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Rombongan Kelas *</label>
+          <select name="class_id" required class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
             {% for c in classes %}
               <option value="{{ c.id }}">{{ c.name }}</option>
             {% endfor %}
@@ -185,29 +204,36 @@
         </div>
       </div>
 
-      <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-          Pemetaan Orang Tua / Wali Murid
-        </label>
-        <select name="parent_id" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+      <div class="border-t border-slate-100 pt-4 mt-4">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Hubungkan Akun Orang Tua / Wali Murid</label>
+        <select name="parent_id" class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
           <option value="">-- Belum Dihubungkan --</option>
           {% for p in parents %}
-            <option value="{{ p.id }}">{{ p.full_name }} ({{ p.username }})</option>
+            <option value="{{ p.id }}">{{ p.full_name }} (@{{ p.username }})</option>
           {% endfor %}
         </select>
-        <p class="text-[11px] text-slate-500 mt-1">Orang tua hanya bisa melihat data anak yang dipetakan kepadanya (Data Isolation).</p>
+        <p class="text-xs text-slate-500 mt-1">Hanya wali murid terhubung yang dapat mengakses data perkembangan anak.</p>
       </div>
 
-      <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Unggah Pas Foto Siswa (Opsional)</label>
-        <input type="file" name="photo" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Status Siswa</label>
+          <select name="is_active" class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
+            <option value="1">Aktif Belajar</option>
+            <option value="0">Nonaktif / Cuti</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Foto Siswa (Opsional)</label>
+          <input type="file" name="photo" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border file:border-slate-300 file:text-xs file:font-medium file:bg-white hover:file:bg-slate-50">
+        </div>
       </div>
 
-      <div class="pt-3 flex justify-end gap-2 border-t border-slate-100">
-        <button type="button" onclick="closeModal('modal-add-student')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+        <button type="button" onclick="closeModal('modal-add-student')" class="px-4 py-2 text-sm font-medium rounded-md border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 transition-colors">
           Batal
         </button>
-        <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 shadow">
+        <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md bg-emerald-700 hover:bg-emerald-800 text-white transition-colors">
           Simpan Data Siswa
         </button>
       </div>
@@ -216,47 +242,48 @@
 </div>
 
 <!-- Modal: Edit Siswa -->
-<div id="modal-edit-student" class="modal-dialog hidden fixed inset-0 z-50 overflow-y-auto items-center justify-center p-4">
-  <div class="modal-overlay fixed inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
-  <div class="modal-content relative bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 z-10 space-y-5">
-    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-      <h3 class="font-heading text-lg font-black text-slate-900">Perbarui Data Siswa</h3>
-      <button onclick="closeModal('modal-edit-student')" class="text-slate-400 hover:text-slate-600">
+<div id="modal-edit-student" class="modal-dialog hidden fixed inset-0 z-50 bg-slate-900/40 flex items-center justify-center p-4">
+  <div class="bg-white border border-slate-200 rounded-lg max-w-xl w-full p-6 shadow-sm max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+      <h3 class="text-base font-semibold text-slate-900">Perbarui Data Siswa</h3>
+      <button type="button" onclick="closeModal('modal-edit-student')" class="text-slate-400 hover:text-slate-600">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
     </div>
 
-    <form id="form-edit-student" action="" method="POST" enctype="multipart/form-data" class="space-y-4">
+    <form id="form-edit-student" action="" method="POST" enctype="multipart/form-data" class="mt-4 space-y-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
       <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Nama Lengkap Anak</label>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Nama Lengkap Anak *</label>
         <input type="text" name="full_name" id="edit-full-name" required
-          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Nama Panggilan</label>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Nama Panggilan *</label>
           <input type="text" name="nickname" id="edit-nickname" required
-            class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+            class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
         </div>
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Tanggal Lahir</label>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Tanggal Lahir *</label>
           <input type="date" name="dob" id="edit-dob" required
-            class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+            class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Jenis Kelamin</label>
-          <select name="gender" id="edit-gender" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Jenis Kelamin *</label>
+          <select name="gender" id="edit-gender" class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
             <option value="L">Laki-laki</option>
             <option value="P">Perempuan</option>
           </select>
         </div>
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Kelas</label>
-          <select name="class_id" id="edit-class-id" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Rombongan Kelas *</label>
+          <select name="class_id" id="edit-class-id" required class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
             {% for c in classes %}
               <option value="{{ c.id }}">{{ c.name }}</option>
             {% endfor %}
@@ -264,35 +291,47 @@
         </div>
       </div>
 
-      <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Wali Murid</label>
-        <select name="parent_id" id="edit-parent-id" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+      <div class="border-t border-slate-100 pt-4 mt-4">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Wali Murid Terdaftar</label>
+        <select name="parent_id" id="edit-parent-id" class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
           <option value="">-- Belum Dihubungkan --</option>
           {% for p in parents %}
-            <option value="{{ p.id }}">{{ p.full_name }} ({{ p.username }})</option>
+            <option value="{{ p.id }}">{{ p.full_name }} (@{{ p.username }})</option>
           {% endfor %}
         </select>
       </div>
 
-      <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Ganti Foto (Opsional)</label>
-        <input type="file" name="photo" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Status Siswa</label>
+          <select name="is_active" id="edit-is-active" class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
+            <option value="1">Aktif Belajar</option>
+            <option value="0">Nonaktif / Cuti</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Perbarui Pas Foto (Opsional)</label>
+          <input type="file" name="photo" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border file:border-slate-300 file:text-xs file:font-medium file:bg-white hover:file:bg-slate-50">
+        </div>
       </div>
 
-      <div class="pt-3 flex justify-end gap-2 border-t border-slate-100">
-        <button type="button" onclick="closeModal('modal-edit-student')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+        <button type="button" onclick="closeModal('modal-edit-student')" class="px-4 py-2 text-sm font-medium rounded-md border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 transition-colors">
           Batal
         </button>
-        <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 shadow">
-          Perbarui Data
+        <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md bg-emerald-700 hover:bg-emerald-800 text-white transition-colors">
+          Simpan Perubahan
         </button>
       </div>
     </form>
   </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
 <script>
-  function openEditStudentModal(id, fullName, nickname, dob, gender, classId, parentId) {
+  function openEditStudentModal(id, fullName, nickname, dob, gender, classId, parentId, isActive) {
     document.getElementById('form-edit-student').action = '/admin/students/' + id + '/edit';
     document.getElementById('edit-full-name').value = fullName;
     document.getElementById('edit-nickname').value = nickname;
@@ -300,6 +339,7 @@
     document.getElementById('edit-gender').value = gender;
     document.getElementById('edit-class-id').value = classId;
     document.getElementById('edit-parent-id').value = parentId ? parentId : '';
+    document.getElementById('edit-is-active').value = isActive ? '1' : '0';
     openModal('modal-edit-student');
   }
 </script>

@@ -221,6 +221,18 @@ def save_development():
 
     return redirect(url_for('teacher.development', class_id=student.class_id))
 
+@teacher_bp.route('/development/<int:score_id>/delete', methods=['POST'])
+@role_required('teacher')
+def delete_development(score_id):
+    score = DevelopmentScore.query.get_or_404(score_id)
+    class_id = score.student.class_id
+    student_name = score.student.nickname
+    db.session.delete(score)
+    db.session.commit()
+    log_audit("DELETE_DEVELOPMENT", f"Deleted development score ID {score_id} for {student_name}")
+    flash(f"Data evaluasi capaian untuk {student_name} telah dihapus.", "info")
+    return redirect(url_for('teacher.development', class_id=class_id))
+
 # --- PICKUP VERIFICATION (KEY FEATURE) ---
 @teacher_bp.route('/pickup')
 @role_required('teacher')
@@ -356,3 +368,27 @@ def toggle_alert(alert_id):
     alert.is_acknowledged = not alert.is_acknowledged
     db.session.commit()
     return redirect(url_for('teacher.alerts', class_id=alert.student.class_id))
+
+@teacher_bp.route('/alerts/<int:alert_id>/edit', methods=['POST'])
+@role_required('teacher')
+def edit_alert(alert_id):
+    alert = HealthAlert.query.get_or_404(alert_id)
+    alert.severity = request.form.get('severity', alert.severity)
+    alert.title = request.form.get('title', alert.title).strip()
+    alert.description = request.form.get('description', alert.description).strip()
+    db.session.commit()
+    log_audit("EDIT_HEALTH_ALERT", f"Updated health alert ID {alert.id} for {alert.student.nickname}")
+    flash("Catatan kesehatan berhasil diperbarui.", "success")
+    return redirect(url_for('teacher.alerts', class_id=alert.student.class_id))
+
+@teacher_bp.route('/alerts/<int:alert_id>/delete', methods=['POST'])
+@role_required('teacher')
+def delete_alert(alert_id):
+    alert = HealthAlert.query.get_or_404(alert_id)
+    class_id = alert.student.class_id
+    title = alert.title
+    db.session.delete(alert)
+    db.session.commit()
+    log_audit("DELETE_HEALTH_ALERT", f"Deleted health alert '{title}'")
+    flash("Catatan kesehatan berhasil dihapus.", "info")
+    return redirect(url_for('teacher.alerts', class_id=class_id))

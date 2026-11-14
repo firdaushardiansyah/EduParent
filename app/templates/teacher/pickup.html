@@ -3,21 +3,21 @@
 {% block title %}Verifikasi Penjemputan Anak — EduParent{% endblock %}
 
 {% block content_area %}
-<div class="space-y-6">
+<div class="p-6 space-y-6">
 
   <!-- Header -->
   <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
     <div>
-      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-warm-100 text-warm-800 text-xs font-bold mb-1">
-        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-warm-600"></i> Sistem Keamanan Anak PAUD/TK
+      <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 text-xs font-medium mb-1.5 border border-slate-200">
+        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-700"></i> Sistem Verifikasi Penjemputan PAUD/TK
       </div>
-      <h1 class="font-heading text-2xl font-black text-slate-900">Papan Kendali Verifikasi Penjemputan</h1>
-      <p class="text-xs text-slate-500 mt-1">Verifikasi identitas penjemput, catat waktu penjemputan, dan unggah foto bukti penyerahan anak</p>
+      <h1 class="text-2xl font-bold text-slate-900">Papan Kendali Penjemputan Siswa</h1>
+      <p class="text-sm text-slate-500 mt-1">Verifikasi identitas penjemput, catat waktu penyerahan anak, dan dokumentasikan foto serah terima</p>
     </div>
     
     <div class="flex items-center gap-2">
-      <span class="text-xs font-bold px-3 py-2 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span class="text-xs font-medium px-3 py-2 rounded-md bg-white border border-slate-200 shadow-sm flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
         {{ today|format_date_id }}
       </span>
     </div>
@@ -26,57 +26,54 @@
   <!-- Class Selector Tabs & Quick Stats -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
     <!-- Class Tabs -->
-    <div class="md:col-span-2 glass-panel p-3 rounded-2xl border border-slate-200/80 bg-white flex items-center gap-2">
-      <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Kelas:</span>
+    <div class="md:col-span-2 bg-white border border-slate-200 rounded-lg p-3 flex items-center gap-2">
+      <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kelas:</span>
       <div class="flex flex-wrap gap-1.5">
         {% for c in classes %}
           <a href="{{ url_for('teacher.pickup', class_id=c.id) }}"
-            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition {% if selected_class_id == c.id %}bg-brand-600 text-white shadow-sm{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+            class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors {% if selected_class_id == c.id %}bg-emerald-700 text-white{% else %}bg-white border border-slate-300 text-slate-700 hover:bg-slate-50{% endif %}">
             {{ c.name }}
           </a>
         {% endfor %}
       </div>
     </div>
 
-    <!-- Live Counter -->
-    {% set waiting_count = students|rejectattr('id', 'in', pickup_map.keys())|list|length + students|selectattr('id', 'in', pickup_map.keys())|rejectattr('id', 'in', pickup_map.keys())|list|length %}
-    <div class="glass-panel p-3 rounded-2xl border border-slate-200/80 bg-white flex items-center justify-around text-center text-xs">
+    <!-- Live Counter Strip -->
+    {% set waiting_count = students|length - (pickup_map.values()|selectattr('status', 'equalto', 'SUDAH_DIJEMPUT')|list|length) %}
+    {% set done_count = pickup_map.values()|selectattr('status', 'equalto', 'SUDAH_DIJEMPUT')|list|length %}
+    <div class="bg-white border border-slate-200 rounded-lg p-3 flex items-center justify-around text-center text-xs">
       <div>
-        <span class="font-bold text-slate-400 uppercase text-[10px] block">Total Siswa</span>
-        <span class="font-heading text-lg font-black text-slate-900">{{ students|length }}</span>
+        <span class="font-medium text-slate-500 uppercase text-[10px] block">Total Siswa</span>
+        <span class="text-lg font-semibold text-slate-900 tabular-nums">{{ students|length }}</span>
       </div>
       <div class="h-6 w-px bg-slate-200"></div>
       <div>
-        <span class="font-bold text-amber-600 uppercase text-[10px] block">Menunggu</span>
-        <span class="font-heading text-lg font-black text-amber-600">
-          {{ students|length - (pickup_map.values()|selectattr('status', 'equalto', 'SUDAH_DIJEMPUT')|list|length) }}
-        </span>
+        <span class="font-medium text-amber-800 uppercase text-[10px] block">Menunggu</span>
+        <span class="text-lg font-semibold text-amber-700 tabular-nums">{{ waiting_count }}</span>
       </div>
       <div class="h-6 w-px bg-slate-200"></div>
       <div>
-        <span class="font-bold text-teal-600 uppercase text-[10px] block">Sudah Pulang</span>
-        <span class="font-heading text-lg font-black text-teal-600">
-          {{ pickup_map.values()|selectattr('status', 'equalto', 'SUDAH_DIJEMPUT')|list|length }}
-        </span>
+        <span class="font-medium text-emerald-800 uppercase text-[10px] block">Sudah Pulang</span>
+        <span class="text-lg font-semibold text-emerald-700 tabular-nums">{{ done_count }}</span>
       </div>
     </div>
   </div>
 
-  <!-- Filter Status -->
-  <div class="glass-panel p-3 rounded-2xl border border-slate-200/80 bg-white flex items-center gap-2">
-    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Filter Status:</span>
+  <!-- Filter Status Buttons -->
+  <div class="bg-white border border-slate-200 rounded-lg p-3 flex items-center gap-2">
+    <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Filter Status:</span>
     <div class="flex gap-1.5">
       <a href="{{ url_for('teacher.pickup', class_id=selected_class_id) }}"
-        class="px-3 py-1 rounded-xl text-xs font-bold transition {% if not request.args.get('status') %}bg-slate-800 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+        class="px-3 py-1 rounded-md text-xs font-medium transition-colors {% if not request.args.get('status') %}bg-slate-800 text-white{% else %}bg-white border border-slate-300 text-slate-700 hover:bg-slate-50{% endif %}">
         Semua ({{ students|length }})
       </a>
       <a href="{{ url_for('teacher.pickup', class_id=selected_class_id, status='waiting') }}"
-        class="px-3 py-1 rounded-xl text-xs font-bold transition {% if request.args.get('status') == 'waiting' %}bg-amber-500 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
-        Menunggu ({{ students|length - (pickup_map.values()|selectattr('status', 'equalto', 'SUDAH_DIJEMPUT')|list|length) }})
+        class="px-3 py-1 rounded-md text-xs font-medium transition-colors {% if request.args.get('status') == 'waiting' %}bg-amber-600 text-white{% else %}bg-white border border-slate-300 text-slate-700 hover:bg-slate-50{% endif %}">
+        Menunggu ({{ waiting_count }})
       </a>
       <a href="{{ url_for('teacher.pickup', class_id=selected_class_id, status='done') }}"
-        class="px-3 py-1 rounded-xl text-xs font-bold transition {% if request.args.get('status') == 'done' %}bg-primary-600 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
-        Sudah Dijemput ({{ pickup_map.values()|selectattr('status', 'equalto', 'SUDAH_DIJEMPUT')|list|length }})
+        class="px-3 py-1 rounded-md text-xs font-medium transition-colors {% if request.args.get('status') == 'done' %}bg-emerald-700 text-white{% else %}bg-white border border-slate-300 text-slate-700 hover:bg-slate-50{% endif %}">
+        Sudah Dijemput ({{ done_count }})
       </a>
     </div>
   </div>
@@ -89,75 +86,73 @@
     {% set status_filter = request.args.get('status') %}
     {% if not status_filter or (status_filter == 'waiting' and not is_picked_up) or (status_filter == 'done' and is_picked_up) %}
 
-    <div class="glass-panel p-5 rounded-3xl border {% if is_picked_up %}border-teal-200 bg-white shadow-sm{% else %}border-amber-200 bg-amber-50/30 shadow-md{% endif %} flex flex-col justify-between space-y-4 relative">
+    <div class="bg-white border {% if is_picked_up %}border-slate-200{% else %}border-amber-200 bg-amber-50/20{% endif %} rounded-lg p-5 flex flex-col justify-between space-y-4">
       
       <div>
         <!-- Student Header -->
         <div class="flex items-start justify-between gap-3">
           <div class="flex items-center gap-3">
-            <img src="{{ s.photo_url or url_for('static', filename='img/avatar_arkan.svg') }}" class="w-12 h-12 rounded-2xl border border-slate-200 object-cover shadow-sm">
+            <img src="{{ s.photo_url or url_for('static', filename='img/avatar_arkan.svg') }}" class="w-11 h-11 rounded-md border border-slate-200 object-cover">
             <div>
-              <h3 class="font-heading font-extrabold text-slate-900 text-base">{{ s.full_name }}</h3>
-              <p class="text-xs text-slate-500">Panggilan: <span class="font-bold text-brand-700">{{ s.nickname }}</span></p>
+              <h3 class="font-semibold text-slate-900 text-sm">{{ s.full_name }}</h3>
+              <p class="text-xs text-slate-500">Panggilan: <span class="font-medium text-emerald-800">{{ s.nickname }}</span></p>
             </div>
           </div>
 
           <!-- Status Badge -->
           {% if is_picked_up %}
-            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200 flex items-center gap-1">
-              <i data-lucide="check-circle" class="w-3.5 h-3.5 text-teal-600"></i> SUDAH DIJEMPUT
+            <span class="px-2.5 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-700"></i> SUDAH DIJEMPUT
             </span>
           {% else %}
-            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1 pulse-waiting">
-              <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span> BELUM DIJEMPUT
+            <span class="px-2.5 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span> MENUNGGU
             </span>
           {% endif %}
         </div>
 
         <!-- Registered Parent Info -->
-        <div class="mt-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+        <div class="mt-3 p-2.5 rounded-md bg-slate-50 border border-slate-200 text-xs">
           <span class="text-slate-400 font-medium block text-[10px] uppercase">Wali Terdaftar:</span>
           {% if s.parent %}
             <div class="flex items-center justify-between mt-0.5">
-              <span class="font-bold text-slate-800">{{ s.parent.full_name }}</span>
-              <a href="https://wa.me/{{ s.parent.phone_number }}" target="_blank" class="text-brand-600 font-semibold flex items-center gap-1 hover:underline">
-                <i data-lucide="phone" class="w-3 h-3"></i> {{ s.parent.phone_number or 'WhatsApp' }}
-              </a>
+              <span class="font-medium text-slate-900">{{ s.parent.full_name }}</span>
+              <span class="text-slate-600 font-mono text-[11px]">{{ s.parent.phone_number or '-' }}</span>
             </div>
           {% else %}
-            <span class="text-rose-500 italic">Belum terhubung akun orang tua</span>
+            <span class="text-amber-800 italic">Belum terhubung akun orang tua</span>
           {% endif %}
         </div>
 
         <!-- Verification Detail Log if Picked Up -->
         {% if is_picked_up %}
-        <div class="mt-3 p-3 rounded-2xl bg-teal-50/70 border border-teal-100 text-xs space-y-1.5 text-teal-950">
+        <div class="mt-3 p-3 rounded-md bg-slate-50 border border-slate-200 text-xs space-y-1.5 text-slate-800">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-semibold text-teal-700">Nama Penjemput:</span>
-            <span class="font-bold">{{ p.collector_name }}</span>
+            <span class="text-slate-500">Nama Penjemput:</span>
+            <span class="font-semibold text-slate-900">{{ p.collector_name }}</span>
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-semibold text-teal-700">Hubungan:</span>
-            <span class="font-semibold px-2 py-0.5 rounded bg-teal-100 text-teal-800 text-[10px]">
+            <span class="text-slate-500">Hubungan:</span>
+            <span class="font-medium px-2 py-0.5 rounded bg-white text-slate-700 border border-slate-200 text-[11px]">
               {{ p.collector_relation }}
             </span>
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-semibold text-teal-700">Waktu Penjemputan:</span>
-            <span class="font-mono font-semibold">{{ p.pickup_time.strftime('%H:%M WIB') if p.pickup_time else '-' }}</span>
+            <span class="text-slate-500">Waktu Penjemputan:</span>
+            <span class="font-mono font-medium">{{ p.pickup_time.strftime('%H:%M WIB') if p.pickup_time else '-' }}</span>
           </div>
 
           {% if p.proof_photo_url %}
           <div class="pt-2">
-            <span class="text-[10px] font-bold text-teal-800 uppercase block mb-1">Bukti Foto Penjemputan:</span>
-            <img src="{{ p.proof_photo_url }}" class="w-full h-32 rounded-xl object-cover border border-teal-200 shadow-sm cursor-pointer"
+            <span class="text-[10px] font-medium text-slate-500 uppercase block mb-1">Bukti Foto Penyerahan:</span>
+            <img src="{{ p.proof_photo_url }}" class="w-full h-32 rounded-md object-cover border border-slate-200 cursor-pointer"
                  onclick="window.open('{{ p.proof_photo_url }}', '_blank')">
           </div>
           {% endif %}
         </div>
         {% else %}
-        <div class="mt-3 p-3 rounded-2xl bg-amber-50/60 border border-amber-100 text-xs text-amber-900 flex items-center gap-2">
-          <i data-lucide="info" class="w-4 h-4 text-amber-600 flex-shrink-0"></i>
+        <div class="mt-3 p-3 rounded-md bg-amber-50/60 border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
+          <i data-lucide="info" class="w-4 h-4 text-amber-700 flex-shrink-0"></i>
           <span>Anak saat ini berada di lingkungan sekolah dalam pengawasan guru piket.</span>
         </div>
         {% endif %}
@@ -166,22 +161,21 @@
       <!-- Action Button Area -->
       <div class="pt-3 border-t border-slate-100 flex items-center gap-2">
         {% if is_picked_up %}
-          <!-- Reset / Edit Status -->
           <button onclick="openVerifyModal({{ s.id }}, '{{ s.nickname|replace("'", "\\'") }}', '{{ (p.collector_name or '')|replace("'", "\\'") }}', '{{ p.collector_relation or 'ORANG_TUA' }}', 'SUDAH_DIJEMPUT')"
-            class="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-teal-700 bg-teal-100 hover:bg-teal-200 transition text-center flex items-center justify-center gap-1">
+            class="flex-1 py-2 px-3 rounded-md text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors flex items-center justify-center gap-1.5">
             <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Perbarui Data Penjemput
           </button>
-          <form action="{{ url_for('teacher.verify_pickup') }}" method="POST" onsubmit="return confirm('Kembalikan status anak menjadi BELUM DIJEMPUT?');">
+          <form action="{{ url_for('teacher.verify_pickup') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="student_id" value="{{ s.id }}">
             <input type="hidden" name="status" value="BELUM_DIJEMPUT">
-            <button type="submit" class="p-2 rounded-xl text-xs text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Batalkan Verifikasi">
-              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+            <button type="submit" class="p-2 rounded-md text-slate-400 hover:text-red-700 hover:bg-red-50 border border-slate-200 transition-colors" title="Batalkan Verifikasi (Kembalikan ke Menunggu)">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
             </button>
           </form>
         {% else %}
-          <!-- Primary Verify Button -->
           <button onclick="openVerifyModal({{ s.id }}, '{{ s.nickname|replace("'", "\\'") }}', '{{ s.parent.full_name if s.parent else '' }}', 'ORANG_TUA', 'SUDAH_DIJEMPUT')"
-            class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-md shadow-amber-500/20 transition flex items-center justify-center gap-2">
+            class="w-full py-2 px-3 rounded-md text-xs font-medium text-white bg-emerald-700 hover:bg-emerald-800 transition-colors flex items-center justify-center gap-2">
             <i data-lucide="shield-check" class="w-4 h-4"></i>
             Verifikasi Penjemputan Sekarang
           </button>
@@ -196,30 +190,27 @@
 </div>
 
 <!-- Modal: Verifikasi Penjemputan Anak -->
-<div id="modal-verify-pickup" class="modal-dialog hidden fixed inset-0 z-50 overflow-y-auto items-center justify-center p-4">
-  <div class="modal-overlay fixed inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
-  <div class="modal-content relative bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 z-10 space-y-5">
+<div id="modal-verify-pickup" class="modal-dialog hidden fixed inset-0 z-50 bg-slate-900/40 flex items-center justify-center p-4">
+  <div class="bg-white border border-slate-200 rounded-lg max-w-lg w-full p-6 shadow-sm max-h-[90vh] overflow-y-auto">
     
-    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-200">
       <div>
-        <div class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-800 text-[10px] font-bold uppercase mb-1">
-          Protokol Keamanan Sekolah
-        </div>
-        <h3 class="font-heading text-lg font-black text-slate-900">Verifikasi Penyerahan Anak</h3>
-        <p class="text-xs text-slate-500">Nama Siswa: <span id="verify-child-name" class="font-bold text-brand-600"></span></p>
+        <h3 class="text-base font-semibold text-slate-900">Verifikasi Penyerahan Anak</h3>
+        <p class="text-xs text-slate-500">Nama Siswa: <span id="verify-child-name" class="font-semibold text-emerald-800"></span></p>
       </div>
-      <button onclick="closeModal('modal-verify-pickup')" class="text-slate-400 hover:text-slate-600">
+      <button type="button" onclick="closeModal('modal-verify-pickup')" class="text-slate-400 hover:text-slate-600">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
     </div>
 
-    <form action="{{ url_for('teacher.verify_pickup') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+    <form action="{{ url_for('teacher.verify_pickup') }}" method="POST" enctype="multipart/form-data" class="mt-4 space-y-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="student_id" id="verify-student-id">
       <input type="hidden" name="status" id="verify-status" value="SUDAH_DIJEMPUT">
 
       <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-          Nama Lengkap Penjemput
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">
+          Nama Lengkap Penjemput *
         </label>
         <div class="relative">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -227,39 +218,38 @@
           </div>
           <input type="text" name="collector_name" id="verify-collector-name" required
             placeholder="contoh: Ibu Dewi Lestari / Pak Bambang"
-            class="w-full pl-9 pr-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+            class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-md bg-white focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
         </div>
       </div>
 
       <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-          Hubungan / Relasi dengan Anak
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">
+          Hubungan / Relasi dengan Anak *
         </label>
-        <select name="collector_relation" id="verify-collector-relation" class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+        <select name="collector_relation" id="verify-collector-relation" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-md bg-white focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
           <option value="ORANG_TUA">ORANG TUA (Ayah / Ibu)</option>
           <option value="PENGASUH">PENGASUH / BABYSITTER</option>
           <option value="SUPIR">SUPIR KELUARGA / JEMPUTAN RESMI</option>
           <option value="KERABAT">KERABAT (Kakek / Nenek / Paman / Bibi)</option>
         </select>
-        <p class="text-[11px] text-slate-400 mt-1">Jika penjemput selain orang tua, pastikan telah ada konfirmasi lisan/pesan dari orang tua.</p>
+        <p class="text-xs text-slate-500 mt-1">Jika penjemput selain orang tua, pastikan telah ada konfirmasi lisan/pesan dari orang tua.</p>
       </div>
 
       <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-          Foto Bukti Penyerahan (Kamera / File)
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">
+          Foto Bukti Penyerahan (Opsional)
         </label>
-        <input type="file" name="proof_photo" accept="image/*" data-preview="preview-proof"
-          class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100">
-        <img id="preview-proof" class="hidden mt-2 w-full h-32 object-cover rounded-xl border border-slate-200">
+        <input type="file" name="proof_photo" accept="image/*"
+          class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border file:border-slate-300 file:text-xs file:font-medium file:bg-white hover:file:bg-slate-50">
       </div>
 
-      <div class="pt-3 flex justify-end gap-2 border-t border-slate-100">
-        <button type="button" onclick="closeModal('modal-verify-pickup')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+        <button type="button" onclick="closeModal('modal-verify-pickup')" class="px-4 py-2 text-sm font-medium rounded-md border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 transition-colors">
           Batal
         </button>
-        <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-teal-600 hover:bg-teal-700 shadow-md transition flex items-center gap-1.5">
+        <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md bg-emerald-700 hover:bg-emerald-800 text-white transition-colors flex items-center gap-1.5">
           <i data-lucide="check" class="w-4 h-4"></i>
-          Konfirmasi & Verifikasi Penjemputan
+          Konfirmasi Penyerahan Anak
         </button>
       </div>
     </form>
@@ -267,6 +257,9 @@
   </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
 <script>
   function openVerifyModal(studentId, nickname, collectorName, collectorRelation, status) {
     document.getElementById('verify-student-id').value = studentId;

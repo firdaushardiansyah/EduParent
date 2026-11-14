@@ -26,6 +26,8 @@ def dashboard():
     recent_logs = AuditLog.query.order_by(AuditLog.created_at.desc()).limit(8).all()
     recent_students = Student.query.order_by(Student.created_at.desc()).limit(5).all()
 
+    all_classes = ClassRoom.query.order_by(ClassRoom.name).all()
+
     return render_template(
         'admin/dashboard.html',
         total_students=total_students,
@@ -37,7 +39,8 @@ def dashboard():
         pickups_today=len(pickups_today),
         picked_up_today=picked_up_today,
         recent_logs=recent_logs,
-        recent_students=recent_students
+        recent_students=recent_students,
+        classes=all_classes
     )
 
 # --- USERS MANAGEMENT (TEACHERS & PARENTS) ---
@@ -45,11 +48,19 @@ def dashboard():
 @role_required('admin')
 def users():
     role_filter = request.args.get('role', '')
+    search_query = request.args.get('q', '').strip()
     query = User.query
     if role_filter in ['admin', 'teacher', 'parent']:
         query = query.filter_by(role=role_filter)
+    if search_query:
+        query = query.filter(
+            (User.full_name.ilike(f'%{search_query}%')) |
+            (User.username.ilike(f'%{search_query}%')) |
+            (User.phone_number.ilike(f'%{search_query}%'))
+        )
     users_list = query.order_by(User.role, User.full_name).all()
-    return render_template('admin/users.html', users=users_list, current_role=role_filter)
+    all_students = Student.query.order_by(Student.full_name).all()
+    return render_template('admin/users.html', users=users_list, current_role=role_filter, all_students=all_students)
 
 @admin_bp.route('/users/create', methods=['POST'])
 @role_required('admin')
@@ -76,6 +87,16 @@ def create_user():
     )
     new_user.set_password(password)
     db.session.add(new_user)
+    db.session.flush()
+
+    # Link children if parent
+    if role == 'parent':
+        student_ids = request.form.getlist('student_ids')
+        if student_ids:
+            Student.query.filter(Student.id.in_([int(sid) for sid in student_ids])).update(
+                {'parent_id': new_user.id}, synchronize_session=False
+            )
+
     db.session.commit()
 
     log_audit("CREATE_USER", f"Created user {username} with role {role}")
@@ -96,6 +117,16 @@ def edit_user(user_id):
     if new_password:
         user.set_password(new_password)
 
+    # Link children if role is parent
+    if user.role == 'parent':
+        student_ids = request.form.getlist('student_ids')
+        # Reset existing links for this parent
+        Student.query.filter_by(parent_id=user.id).update({'parent_id': None}, synchronize_session=False)
+        if student_ids:
+            Student.query.filter(Student.id.in_([int(sid) for sid in student_ids])).update(
+                {'parent_id': user.id}, synchronize_session=False
+            )
+
     db.session.commit()
     log_audit("EDIT_USER", f"Updated user {user.username} (ID: {user.id})")
     flash(f"Data pengguna {user.full_name} berhasil diperbarui.", "success")
@@ -110,6 +141,11 @@ def delete_user(user_id):
         return redirect(url_for('admin.users'))
 
     username = user.username
+    # Unlink any children from parent
+    Student.query.filter_by(parent_id=user.id).update({'parent_id': None}, synchronize_session=False)
+    # Unlink any classes taught
+    ClassRoom.query.filter_by(teacher_id=user.id).update({'teacher_id': None}, synchronize_session=False)
+
     db.session.delete(user)
     db.session.commit()
     log_audit("DELETE_USER", f"Deleted user {username} (ID: {user_id})")
@@ -176,9 +212,22 @@ def delete_class(class_id):
 @role_required('admin')
 def students():
     class_id = request.args.get('class_id', type=int)
+    search_query = request.args.get('q', '').strip()
+    status_filter = request.args.get('status', '').strip()
+
     query = Student.query
+    if search_query:
+        query = query.filter(
+            (Student.full_name.ilike(f'%{search_query}%')) |
+            (Student.nickname.ilike(f'%{search_query}%'))
+        )
     if class_id:
         query = query.filter_by(class_id=class_id)
+    if status_filter == 'active':
+        query = query.filter_by(is_active=True)
+    elif status_filter == 'inactive':
+        query = query.filter_by(is_active=False)
+
     students_list = query.order_by(Student.full_name).all()
 
     all_classes = ClassRoom.query.order_by(ClassRoom.name).all()
@@ -189,7 +238,9 @@ def students():
         students=students_list,
         classes=all_classes,
         parents=parents,
-        selected_class_id=class_id
+        selected_class_id=class_id,
+        search_query=search_query,
+        status_filter=status_filter
     )
 
 @admin_bp.route('/students/create', methods=['POST'])
@@ -201,6 +252,7 @@ def create_student():
     gender = request.form.get('gender', 'L')
     class_id = request.form.get('class_id', type=int)
     parent_id = request.form.get('parent_id') or None
+    is_active = request.form.get('is_active', '1') == '1'
 
     if not full_name or not nickname or not dob_str or not class_id:
         flash("Mohon lengkapi semua kolom wajib untuk pendaftaran siswa.", "danger")
@@ -223,7 +275,8 @@ def create_student():
         gender=gender,
         class_id=class_id,
         parent_id=int(parent_id) if parent_id else None,
-        photo_url=photo_url
+        photo_url=photo_url,
+        is_active=is_active
     )
     db.session.add(student)
     db.session.commit()
@@ -240,6 +293,7 @@ def edit_student(student_id):
     student.nickname = request.form.get('nickname', student.nickname).strip()
     student.gender = request.form.get('gender', student.gender)
     student.class_id = request.form.get('class_id', student.class_id, type=int)
+    student.is_active = (request.form.get('is_active', '1') == '1')
 
     parent_id = request.form.get('parent_id')
     student.parent_id = int(parent_id) if parent_id else None
@@ -276,5 +330,19 @@ def delete_student(student_id):
 @admin_bp.route('/audit-logs')
 @role_required('admin')
 def audit_logs():
-    logs = AuditLog.query.order_by(AuditLog.created_at.desc()).limit(150).all()
-    return render_template('admin/audit_logs.html', logs=logs)
+    date_str = request.args.get('date', '').strip()
+    action_filter = request.args.get('action', '').strip()
+
+    query = AuditLog.query
+    if date_str:
+        try:
+            target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            query = query.filter(db.func.date(AuditLog.created_at) == target_date)
+        except ValueError:
+            pass
+
+    if action_filter:
+        query = query.filter(AuditLog.action.ilike(f'%{action_filter}%'))
+
+    logs = query.order_by(AuditLog.created_at.desc()).limit(150).all()
+    return render_template('admin/audit_logs.html', logs=logs, selected_date=date_str, selected_action=action_filter)

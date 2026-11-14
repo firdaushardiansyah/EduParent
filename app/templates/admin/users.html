@@ -1,80 +1,82 @@
 {% extends "base.html" %}
 
-{% block title %}Manajemen Pengguna — EduParent{% endblock %}
+{% block title %}Manajemen Pengguna & Akses — EduParent{% endblock %}
 
 {% block content_area %}
-<div class="space-y-6">
+<div class="p-6 space-y-6">
 
   <!-- Header -->
   <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
     <div>
-      <h1 class="font-heading text-2xl font-black text-slate-900">Manajemen Pengguna & Hak Akses (RBAC)</h1>
-      <p class="text-xs text-slate-500 mt-1">Kelola kredensial akun Administrator, Guru Kelas, dan Orang Tua / Wali Murid</p>
+      <h1 class="text-2xl font-bold text-slate-900">Manajemen Pengguna & Hak Akses</h1>
+      <p class="text-sm text-slate-500 mt-1">Kelola akun Administrator, Guru Kelas, dan Orang Tua / Wali Murid</p>
     </div>
-    <button onclick="openModal('modal-add-user')" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white shadow-sm transition">
+    <button onclick="openModal('modal-add-user')" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md bg-emerald-700 hover:bg-emerald-800 text-white transition-colors">
       <i data-lucide="user-plus" class="w-4 h-4"></i> Tambah Pengguna Baru
     </button>
   </div>
 
   <!-- Role Filter Tabs -->
-  <div class="glass-panel p-2 rounded-2xl border border-slate-200/80 bg-white inline-flex flex-wrap gap-1">
-    <a href="{{ url_for('admin.users') }}" class="px-4 py-1.5 rounded-xl text-xs font-bold transition {% if not current_role %}bg-slate-900 text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
-      Semua Pengguna ({{ users|length }})
-    </a>
-    <a href="{{ url_for('admin.users', role='teacher') }}" class="px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 {% if current_role == 'teacher' %}bg-brand-600 text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
-      <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i> Guru Kelas
-    </a>
-    <a href="{{ url_for('admin.users', role='parent') }}" class="px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 {% if current_role == 'parent' %}bg-warm-500 text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
-      <i data-lucide="heart" class="w-3.5 h-3.5"></i> Orang Tua
-    </a>
-    <a href="{{ url_for('admin.users', role='admin') }}" class="px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 {% if current_role == 'admin' %}bg-purple-600 text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
-      <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Administrator
-    </a>
+  <div class="bg-white border border-slate-200 rounded-lg p-3 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-wrap gap-1.5">
+      <a href="{{ url_for('admin.users') }}" class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors {% if not current_role %}bg-slate-800 text-white{% else %}bg-white border border-slate-300 text-slate-700 hover:bg-slate-50{% endif %}">
+        Semua Pengguna ({{ users|length }})
+      </a>
+      <a href="{{ url_for('admin.users', role='teacher') }}" class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 {% if current_role == 'teacher' %}bg-emerald-700 text-white{% else %}bg-white border border-slate-300 text-slate-700 hover:bg-slate-50{% endif %}">
+        <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i> Guru Kelas
+      </a>
+      <a href="{{ url_for('admin.users', role='parent') }}" class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 {% if current_role == 'parent' %}bg-amber-600 text-white{% else %}bg-white border border-slate-300 text-slate-700 hover:bg-slate-50{% endif %}">
+        <i data-lucide="heart" class="w-3.5 h-3.5"></i> Orang Tua
+      </a>
+      <a href="{{ url_for('admin.users', role='admin') }}" class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 {% if current_role == 'admin' %}bg-slate-900 text-white{% else %}bg-white border border-slate-300 text-slate-700 hover:bg-slate-50{% endif %}">
+        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Administrator
+      </a>
+    </div>
   </div>
 
   <!-- Users Table -->
-  <div class="glass-panel rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-sm">
+  <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
     <div class="overflow-x-auto">
-      <table class="w-full text-left text-sm text-slate-600">
-        <thead class="text-xs font-bold uppercase bg-slate-50 text-slate-500 border-b border-slate-200">
+      <table class="w-full text-left text-sm text-slate-700">
+        <thead class="text-xs font-semibold uppercase bg-slate-50 text-slate-600 border-b border-slate-200">
           <tr>
-            <th class="py-3.5 px-4">Nama Lengkap</th>
-            <th class="py-3.5 px-4">Username</th>
-            <th class="py-3.5 px-4">Peran (Role)</th>
-            <th class="py-3.5 px-4">No. Telepon / WhatsApp</th>
-            <th class="py-3.5 px-4">Hubungan Terdaftar</th>
-            <th class="py-3.5 px-4 text-center">Status</th>
-            <th class="py-3.5 px-4 text-right">Aksi</th>
+            <th class="py-3 px-4">Nama Lengkap</th>
+            <th class="py-3 px-4">Username</th>
+            <th class="py-3 px-4">Peran (Role)</th>
+            <th class="py-3 px-4">No. Telepon / WhatsApp</th>
+            <th class="py-3 px-4">Hubungan Terdaftar</th>
+            <th class="py-3 px-4 text-center">Status</th>
+            <th class="py-3 px-4 text-right">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
           {% for u in users %}
-          <tr class="hover:bg-slate-50/70 transition">
-            <td class="py-3.5 px-4 font-bold text-slate-900">
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="py-3 px-4 font-medium text-slate-900">
               {{ u.full_name }}
               {% if u.id == current_user.id %}
-                <span class="text-[10px] font-semibold text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded border border-brand-200 ml-1">Akun Anda</span>
+                <span class="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 ml-1">Akun Anda</span>
               {% endif %}
             </td>
-            <td class="py-3.5 px-4 font-mono text-xs text-slate-600">
+            <td class="py-3 px-4 font-mono text-xs text-slate-600">
               @{{ u.username }}
             </td>
-            <td class="py-3.5 px-4 text-xs font-bold">
+            <td class="py-3 px-4 text-xs font-medium">
               {% if u.role == 'admin' %}
-                <span class="px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200">Admin</span>
+                <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">Administrator</span>
               {% elif u.role == 'teacher' %}
-                <span class="px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-200">Guru</span>
+                <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">Guru Kelas</span>
               {% else %}
-                <span class="px-2.5 py-1 rounded-full bg-warm-50 text-warm-700 border border-warm-200">Orang Tua</span>
+                <span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">Orang Tua</span>
               {% endif %}
             </td>
-            <td class="py-3.5 px-4 text-xs text-slate-600">
+            <td class="py-3 px-4 text-xs text-slate-600">
               {{ u.phone_number or '-' }}
             </td>
-            <td class="py-3.5 px-4 text-xs">
+            <td class="py-3 px-4 text-xs">
               {% if u.role == 'teacher' %}
                 {% if u.classes_taught %}
-                  <span class="text-teal-700 font-semibold">{{ u.classes_taught|map(attribute='name')|join(', ') }}</span>
+                  <span class="text-slate-800 font-medium">{{ u.classes_taught|map(attribute='name')|join(', ') }}</span>
                 {% else %}
                   <span class="text-slate-400 italic">Belum pegang kelas</span>
                 {% endif %}
@@ -82,33 +84,35 @@
                 {% if u.children %}
                   <div class="flex flex-wrap gap-1">
                     {% for ch in u.children %}
-                      <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium text-[11px]">{{ ch.nickname }} ({{ ch.classroom.name }})</span>
+                      <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium border border-slate-200">
+                        {{ ch.nickname }} ({{ ch.classroom.name.split()[0] }})
+                      </span>
                     {% endfor %}
                   </div>
                 {% else %}
-                  <span class="text-rose-500 italic">Belum ada anak terhubung</span>
+                  <span class="text-amber-700 bg-amber-50 px-2 py-0.5 rounded text-[11px] font-medium">Belum ada anak terhubung</span>
                 {% endif %}
               {% else %}
                 <span class="text-slate-400">Pengelola Sistem</span>
               {% endif %}
             </td>
-            <td class="py-3.5 px-4 text-center">
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
+            <td class="py-3 px-4 text-center">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-700"></span> Aktif
               </span>
             </td>
-            <td class="py-3.5 px-4 text-right">
-              <div class="flex items-center justify-end gap-1.5">
-                <button onclick="openEditUserModal({{ u.id }}, '{{ u.username }}', '{{ u.full_name|replace("'", "\\'") }}', '{{ u.phone_number or '' }}', '{{ u.role }}')"
-                  class="p-1.5 rounded-lg text-slate-500 hover:text-brand-600 hover:bg-brand-50 transition" title="Ubah Pengguna">
+            <td class="py-3 px-4 text-right">
+              <div class="flex items-center justify-end gap-1">
+                {% set child_ids = u.children|map(attribute='id')|list %}
+                <button onclick="openEditUserModal({{ u.id }}, '{{ u.username }}', '{{ u.full_name|replace("'", "\\'") }}', '{{ u.phone_number or '' }}', '{{ u.role }}', {{ child_ids|tojson }})"
+                  class="p-1.5 rounded-md text-slate-600 hover:text-emerald-700 hover:bg-slate-100 transition-colors" title="Ubah Data">
                   <i data-lucide="edit-3" class="w-4 h-4"></i>
                 </button>
                 {% if u.id != current_user.id %}
-                <form action="{{ url_for('admin.delete_user', user_id=u.id) }}" method="POST" onsubmit="return confirm('Hapus pengguna @{{ u.username }}?');" class="inline">
-                  <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Hapus">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                  </button>
-                </form>
+                <button type="button" onclick="confirmDelete('{{ url_for('admin.delete_user', user_id=u.id) }}', '{{ u.full_name|replace("'", "\\'") }} (@{{ u.username }})', 'Pengguna')"
+                  class="p-1.5 rounded-md text-slate-400 hover:text-red-700 hover:bg-red-50 transition-colors" title="Hapus Pengguna">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
                 {% endif %}
               </div>
             </td>
@@ -122,56 +126,73 @@
 </div>
 
 <!-- Modal: Tambah User -->
-<div id="modal-add-user" class="modal-dialog hidden fixed inset-0 z-50 overflow-y-auto items-center justify-center p-4">
-  <div class="modal-overlay fixed inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
-  <div class="modal-content relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8 z-10 space-y-5">
-    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-      <h3 class="font-heading text-lg font-black text-slate-900">Tambah Akun Pengguna</h3>
-      <button onclick="closeModal('modal-add-user')" class="text-slate-400 hover:text-slate-600">
+<div id="modal-add-user" class="modal-dialog hidden fixed inset-0 z-50 bg-slate-900/40 flex items-center justify-center p-4">
+  <div class="bg-white border border-slate-200 rounded-lg max-w-lg w-full p-6 shadow-sm max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+      <h3 class="text-base font-semibold text-slate-900">Tambah Akun Pengguna</h3>
+      <button type="button" onclick="closeModal('modal-add-user')" class="text-slate-400 hover:text-slate-600">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
     </div>
 
-    <form action="{{ url_for('admin.create_user') }}" method="POST" class="space-y-4">
+    <form action="{{ url_for('admin.create_user') }}" method="POST" class="mt-4 space-y-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
       <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Nama Lengkap & Gelar</label>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Nama Lengkap & Gelar *</label>
         <input type="text" name="full_name" required placeholder="contoh: Rina Marlina, S.Pd."
-          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
       </div>
 
-      <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Username Login</label>
-        <input type="text" name="username" required placeholder="contoh: guru_rina"
-          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
-      </div>
-
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Peran (Role)</label>
-          <select name="role" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
-            <option value="parent">Orang Tua</option>
-            <option value="teacher">Guru</option>
-            <option value="admin">Admin</option>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Username Login *</label>
+          <input type="text" name="username" required placeholder="guru_rina"
+            class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Kata Sandi Awal *</label>
+          <input type="password" name="password" value="123456" required
+            class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Peran (Role) *</label>
+          <select name="role" id="add-user-role" onchange="toggleChildrenSelect('add')" class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
+            <option value="parent">Orang Tua / Wali Murid</option>
+            <option value="teacher">Guru Kelas</option>
+            <option value="admin">Administrator</option>
           </select>
         </div>
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Kata Sandi Awal</label>
-          <input type="password" name="password" value="123456" required
-            class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">No. Telepon / WhatsApp</label>
+          <input type="text" name="phone_number" placeholder="081234567890"
+            class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
         </div>
       </div>
 
-      <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">No. Telepon / WhatsApp</label>
-        <input type="text" name="phone_number" placeholder="081234567890"
-          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+      <!-- Hubungkan Anak (Khusus Orang Tua) -->
+      <div id="add-children-section" class="border-t border-slate-100 pt-4 mt-4">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Hubungkan Anak Didik (Siswa)</label>
+        <p class="text-xs text-slate-500 mb-2">Pilih anak yang diasuh oleh wali murid ini:</p>
+        <div class="max-h-40 overflow-y-auto border border-slate-200 rounded-md p-2.5 space-y-1.5 bg-slate-50">
+          {% for st in all_students %}
+          <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white p-1 rounded">
+            <input type="checkbox" name="student_ids" value="{{ st.id }}" class="rounded text-emerald-700 focus:ring-emerald-700">
+            <span class="font-medium text-slate-900">{{ st.full_name }}</span>
+            <span class="text-slate-400">({{ st.classroom.name }})</span>
+          </label>
+          {% endfor %}
+        </div>
       </div>
 
-      <div class="pt-3 flex justify-end gap-2 border-t border-slate-100">
-        <button type="button" onclick="closeModal('modal-add-user')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+        <button type="button" onclick="closeModal('modal-add-user')" class="px-4 py-2 text-sm font-medium rounded-md border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 transition-colors">
           Batal
         </button>
-        <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 shadow">
+        <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md bg-emerald-700 hover:bg-emerald-800 text-white transition-colors">
           Buat Pengguna
         </button>
       </div>
@@ -180,63 +201,110 @@
 </div>
 
 <!-- Modal: Edit User -->
-<div id="modal-edit-user" class="modal-dialog hidden fixed inset-0 z-50 overflow-y-auto items-center justify-center p-4">
-  <div class="modal-overlay fixed inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
-  <div class="modal-content relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8 z-10 space-y-5">
-    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-      <h3 class="font-heading text-lg font-black text-slate-900">Perbarui Pengguna</h3>
-      <button onclick="closeModal('modal-edit-user')" class="text-slate-400 hover:text-slate-600">
+<div id="modal-edit-user" class="modal-dialog hidden fixed inset-0 z-50 bg-slate-900/40 flex items-center justify-center p-4">
+  <div class="bg-white border border-slate-200 rounded-lg max-w-lg w-full p-6 shadow-sm max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+      <h3 class="text-base font-semibold text-slate-900">Perbarui Pengguna & Reset Password</h3>
+      <button type="button" onclick="closeModal('modal-edit-user')" class="text-slate-400 hover:text-slate-600">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
     </div>
 
-    <form id="form-edit-user" action="" method="POST" class="space-y-4">
+    <form id="form-edit-user" action="" method="POST" class="mt-4 space-y-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
       <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Nama Lengkap</label>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Nama Lengkap & Gelar *</label>
         <input type="text" name="full_name" id="edit-user-fullname" required
-          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Peran (Role)</label>
-          <select name="role" id="edit-user-role" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Peran (Role) *</label>
+          <select name="role" id="edit-user-role" onchange="toggleChildrenSelect('edit')" class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
             <option value="parent">Orang Tua</option>
             <option value="teacher">Guru</option>
             <option value="admin">Admin</option>
           </select>
         </div>
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Kata Sandi Baru (Opsional)</label>
-          <input type="password" name="password" placeholder="Kosongkan jika tak diubah"
-            class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">No. Telepon / WhatsApp</label>
+          <input type="text" name="phone_number" id="edit-user-phone"
+            class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
         </div>
       </div>
 
       <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">No. Telepon / WhatsApp</label>
-        <input type="text" name="phone_number" id="edit-user-phone"
-          class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Kata Sandi Baru (Opsional)</label>
+        <input type="password" name="password" placeholder="Kosongkan jika tidak ingin mengubah"
+          class="w-full rounded-md border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
+        <p class="text-xs text-slate-500 mt-1">Gunakan field ini untuk melakukan reset kata sandi pengguna.</p>
       </div>
 
-      <div class="pt-3 flex justify-end gap-2 border-t border-slate-100">
-        <button type="button" onclick="closeModal('modal-edit-user')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">
+      <!-- Hubungkan Anak (Khusus Orang Tua) -->
+      <div id="edit-children-section" class="border-t border-slate-100 pt-4 mt-4">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Hubungkan Anak Didik (Siswa)</label>
+        <p class="text-xs text-slate-500 mb-2">Tandai siswa yang diasuh oleh akun ini:</p>
+        <div class="max-h-40 overflow-y-auto border border-slate-200 rounded-md p-2.5 space-y-1.5 bg-slate-50">
+          {% for st in all_students %}
+          <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white p-1 rounded">
+            <input type="checkbox" name="student_ids" value="{{ st.id }}" id="edit-student-{{ st.id }}" class="edit-student-checkbox rounded text-emerald-700 focus:ring-emerald-700">
+            <span class="font-medium text-slate-900">{{ st.full_name }}</span>
+            <span class="text-slate-400">({{ st.classroom.name }})</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+        <button type="button" onclick="closeModal('modal-edit-user')" class="px-4 py-2 text-sm font-medium rounded-md border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 transition-colors">
           Batal
         </button>
-        <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 shadow">
-          Perbarui
+        <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md bg-emerald-700 hover:bg-emerald-800 text-white transition-colors">
+          Simpan Perubahan
         </button>
       </div>
     </form>
   </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
 <script>
-  function openEditUserModal(id, username, fullName, phone, role) {
+  function toggleChildrenSelect(mode) {
+    const roleSelect = document.getElementById(mode === 'add' ? 'add-user-role' : 'edit-user-role');
+    const section = document.getElementById(mode === 'add' ? 'add-children-section' : 'edit-children-section');
+    if (roleSelect && section) {
+      if (roleSelect.value === 'parent') {
+        section.classList.remove('hidden');
+      } else {
+        section.classList.add('hidden');
+      }
+    }
+  }
+
+  function openEditUserModal(id, username, fullName, phone, role, childIds) {
     document.getElementById('form-edit-user').action = '/admin/users/' + id + '/edit';
     document.getElementById('edit-user-fullname').value = fullName;
     document.getElementById('edit-user-phone').value = phone;
     document.getElementById('edit-user-role').value = role;
+
+    // Reset student checkboxes
+    document.querySelectorAll('.edit-student-checkbox').forEach(cb => {
+      cb.checked = false;
+    });
+
+    // Check associated children
+    if (Array.isArray(childIds)) {
+      childIds.forEach(cid => {
+        const cb = document.getElementById('edit-student-' + cid);
+        if (cb) cb.checked = true;
+      });
+    }
+
+    toggleChildrenSelect('edit');
     openModal('modal-edit-user');
   }
 </script>
