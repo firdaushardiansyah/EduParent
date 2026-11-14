@@ -1,340 +1,280 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard Anak — EduParent{% endblock %}
+{% block title %}Pantauan Hari Ini — EduParent{% endblock %}
 
-{% block content %}
-<div class="space-y-6">
+{% block content_area %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-  <!-- Multi-Child Switcher Banner (if parent has multiple children) -->
+  <!-- Child Profile Header (CLEAN - NO GRADIENT BANNER) -->
   {% if children|length > 1 %}
-  <div class="glass-panel p-3 rounded-2xl border border-slate-200/80 bg-white flex flex-wrap items-center justify-between gap-3 shadow-sm">
-    <div class="flex items-center gap-2">
-      <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pilih Profil Anak:</span>
-      <div class="flex flex-wrap gap-2">
-        {% for ch in children %}
-          <a href="{{ url_for('parent.dashboard', child_id=ch.id) }}"
-            class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition
-              {% if selected_child.id == ch.id %}bg-brand-600 text-white shadow-md shadow-brand-500/20{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
-            <img src="{{ ch.photo_url or url_for('static', filename='img/avatar_arkan.svg') }}" class="w-5 h-5 rounded-full object-cover">
-            <span>{{ ch.nickname }} ({{ ch.classroom.name.split()[0] }})</span>
-          </a>
-        {% endfor %}
-      </div>
+  <div class="bg-warm-50 border border-warm-200 rounded-lg p-3 flex items-center gap-3">
+    <span class="text-xs font-medium text-slate-600">Pilih anak:</span>
+    <div class="flex flex-wrap gap-2">
+      {% for ch in children %}
+        <a href="{{ url_for('parent.dashboard', child_id=ch.id) }}"
+          class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition
+            {% if selected_child.id == ch.id %}bg-primary-600 text-white{% else %}bg-white text-slate-700 hover:bg-slate-50 border border-slate-200{% endif %}">
+          <span>{{ ch.nickname }}</span>
+          <span class="text-[10px] opacity-70">• {{ ch.classroom.name.split()[0] }}</span>
+        </a>
+      {% endfor %}
     </div>
-    <span class="text-xs font-semibold text-brand-700 bg-brand-50 px-2.5 py-1 rounded-lg">
-      {{ children|length }} Anak Terdaftar
-    </span>
   </div>
   {% endif %}
 
-  <!-- Child Profile Bento Header -->
-  <div class="glass-panel p-6 sm:p-8 rounded-3xl relative overflow-hidden bg-gradient-to-r from-teal-900 via-brand-800 to-teal-950 text-white shadow-xl">
-    <div class="relative z-10 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
-      <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
-        <div class="relative">
-          <img src="{{ selected_child.photo_url or url_for('static', filename='img/avatar_arkan.svg') }}"
-               class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl border-4 border-white/20 shadow-2xl object-cover bg-white">
-          <span class="absolute -bottom-2 -right-2 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-warm-400 text-slate-900 border-2 border-white shadow">
-            {{ selected_child.nickname }}
-          </span>
-        </div>
-        <div>
-          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur border border-white/20 text-xs font-semibold text-teal-200 mb-2">
-            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-warm-300"></i> {{ selected_child.classroom.name }}
+  <!-- Child Profile Card (Ringkas & Hangat) -->
+  <div class="bg-white border border-slate-200 rounded-lg p-5">
+    <div class="flex items-start gap-4">
+      <img src="{{ selected_child.photo_url or url_for('static', filename='img/avatar_arkan.svg') }}"
+           class="w-16 h-16 rounded-lg object-cover border border-slate-200">
+      <div class="flex-1">
+        <div class="flex items-start justify-between">
+          <div>
+            <h1 class="text-xl font-bold text-slate-900">{{ selected_child.full_name }}</h1>
+            <div class="flex items-center gap-3 mt-1 text-xs text-slate-500">
+              <span>{{ selected_child.classroom.name }}</span>
+              <span>•</span>
+              <span>Usia: {{ selected_child.age }}</span>
+              <span>•</span>
+              <span>Guru: {{ selected_child.classroom.teacher.full_name if selected_child.classroom.teacher else 'Wali Kelas' }}</span>
+            </div>
           </div>
-          <h1 class="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight">
-            {{ selected_child.full_name }}
-          </h1>
-          <p class="text-xs sm:text-sm text-teal-100/90 mt-1 flex flex-wrap items-center justify-center sm:justify-start gap-3">
-            <span><i data-lucide="cake" class="w-3.5 h-3.5 inline mr-1"></i> Usia: {{ selected_child.age }}</span>
-            <span>•</span>
-            <span><i data-lucide="graduation-cap" class="w-3.5 h-3.5 inline mr-1"></i> Guru: {{ selected_child.classroom.teacher.full_name if selected_child.classroom.teacher else 'Wali Kelas' }}</span>
-          </p>
+          <div class="flex gap-2">
+            <a href="{{ url_for('parent.journal_feed', student_id=selected_child.id) }}"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 transition">
+              <i data-lucide="images" class="w-3.5 h-3.5"></i> Galeri
+            </a>
+            <a href="{{ url_for('parent.development_report', student_id=selected_child.id) }}"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 transition">
+              <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Perkembangan
+            </a>
+          </div>
         </div>
-      </div>
-
-      <!-- Quick Action Navigation -->
-      <div class="flex flex-wrap sm:flex-col gap-2 w-full sm:w-auto">
-        <a href="{{ url_for('parent.journal_feed', student_id=selected_child.id) }}"
-           class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-900 hover:bg-teal-50 transition shadow-sm">
-          <i data-lucide="images" class="w-4 h-4 text-brand-600"></i> Galeri & Jurnal
-        </a>
-        <a href="{{ url_for('parent.development_report', student_id=selected_child.id) }}"
-           class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-brand-500/30 hover:bg-brand-500/50 text-white border border-white/20 backdrop-blur transition">
-          <i data-lucide="line-chart" class="w-4 h-4"></i> Grafik Capaian
-        </a>
       </div>
     </div>
   </div>
 
-  <!-- High-Priority Alerts (If any) -->
+  <!-- Alert Kontekstual (Jika Ada) -->
   {% for alert in alerts if not alert.is_acknowledged %}
-  <div class="p-5 rounded-3xl border shadow-sm transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4
-    {% if alert.severity == 'HIGH' %}bg-rose-50 border-rose-300 text-rose-950
-    {% elif alert.severity == 'MEDIUM' %}bg-amber-50 border-amber-300 text-amber-950
-    {% else %}bg-sky-50 border-sky-300 text-sky-950{% endif %}">
-    
-    <div class="flex items-start gap-3.5">
-      <div class="p-2.5 rounded-2xl
-        {% if alert.severity == 'HIGH' %}bg-rose-600 text-white
-        {% elif alert.severity == 'MEDIUM' %}bg-amber-500 text-white
-        {% else %}bg-sky-500 text-white{% endif %} flex-shrink-0 shadow-sm">
-        <i data-lucide="bell-ring" class="w-6 h-6 animate-bounce"></i>
-      </div>
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded
-            {% if alert.severity == 'HIGH' %}bg-rose-200 text-rose-900
-            {% elif alert.severity == 'MEDIUM' %}bg-amber-200 text-amber-900
-            {% else %}bg-sky-200 text-sky-900{% endif %}">
-            Pemberitahuan {{ alert.severity }}
-          </span>
-          <span class="text-xs text-slate-500">{{ alert.created_at|format_datetime_id }}</span>
+  <div class="p-4 rounded-lg border flex items-start justify-between gap-4
+    {% if alert.severity == 'HIGH' %}bg-rose-50 border-rose-200{% elif alert.severity == 'MEDIUM' %}bg-amber-50 border-amber-200{% else %}bg-sky-50 border-sky-200{% endif %}">
+    <div class="flex items-start gap-3 flex-1">
+      <i data-lucide="bell" class="w-5 h-5 flex-shrink-0 {% if alert.severity == 'HIGH' %}text-rose-600{% elif alert.severity == 'MEDIUM' %}text-amber-600{% else %}text-sky-600{% endif %}"></i>
+      <div class="flex-1">
+        <div class="flex items-center gap-2 mb-1">
+          <h4 class="text-sm font-semibold {% if alert.severity == 'HIGH' %}text-rose-900{% elif alert.severity == 'MEDIUM' %}text-amber-900{% else %}text-sky-900{% endif %}">{{ alert.title }}</h4>
+          <span class="text-[10px] px-1.5 py-0.5 rounded {% if alert.severity == 'HIGH' %}bg-rose-200 text-rose-800{% elif alert.severity == 'MEDIUM' %}bg-amber-200 text-amber-800{% else %}bg-sky-200 text-sky-800{% endif %}">{{ alert.severity }}</span>
         </div>
-        <h4 class="font-heading font-black text-base mt-1">{{ alert.title }}</h4>
-        <p class="text-xs mt-1 leading-relaxed opacity-90">{{ alert.description }}</p>
+        <p class="text-xs {% if alert.severity == 'HIGH' %}text-rose-800{% elif alert.severity == 'MEDIUM' %}text-amber-800{% else %}text-sky-800{% endif %}">{{ alert.description }}</p>
+        <span class="text-[10px] text-slate-500 mt-1 block">{{ alert.created_at|format_datetime_id }}</span>
       </div>
     </div>
-
-    <!-- Acknowledgement Form -->
-    <form action="{{ url_for('parent.acknowledge_alert', alert_id=alert.id) }}" method="POST" class="flex-shrink-0">
-      <button type="submit" class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow-md transition flex items-center justify-center gap-1.5
-        {% if alert.severity == 'HIGH' %}bg-rose-600 hover:bg-rose-700
-        {% elif alert.severity == 'MEDIUM' %}bg-amber-600 hover:bg-amber-700
-        {% else %}bg-sky-600 hover:bg-sky-700{% endif %}">
-        <i data-lucide="check" class="w-4 h-4"></i> Konfirmasi Sudah Dibaca
+    <form action="{{ url_for('parent.acknowledge_alert', alert_id=alert.id) }}" method="POST">
+      <button type="submit" class="px-3 py-1.5 rounded-md text-xs font-medium text-white whitespace-nowrap {% if alert.severity == 'HIGH' %}bg-rose-600 hover:bg-rose-700{% elif alert.severity == 'MEDIUM' %}bg-amber-600 hover:bg-amber-700{% else %}bg-sky-600 hover:bg-sky-700{% endif %} transition">
+        Sudah Dibaca
       </button>
     </form>
   </div>
   {% endfor %}
 
-  <!-- Bento 2-Col Layout: Real-Time Pickup Status & Today's Daily Journal -->
+  <!-- Grid Utama 2 Kolom Seimbang -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-    <!-- Card 1: REAL-TIME PICKUP VERIFICATION (Key Feature with 8s polling) -->
-    <div id="live-pickup-widget" data-student-id="{{ selected_child.id }}"
-         class="bento-card glass-panel p-6 rounded-3xl border border-slate-200/80 bg-white shadow-sm flex flex-col justify-between space-y-4">
-      
-      <div>
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div class="flex items-center gap-2">
-            <div class="w-9 h-9 rounded-xl bg-amber-50 text-warm-600 flex items-center justify-center">
-              <i data-lucide="shield-check" class="w-5 h-5"></i>
-            </div>
-            <div>
-              <h2 class="font-heading text-lg font-bold text-slate-900">Verifikasi Penjemputan</h2>
-              <p class="text-[11px] text-slate-500">Status keamanan kepulangan hari ini (Real-time)</p>
-            </div>
-          </div>
+    <!-- Kolom Kiri: Status Penjemputan Real-time -->
+    <div id="live-pickup-widget" data-student-id="{{ selected_child.id }}" class="bg-white border border-slate-200 rounded-lg">
+      <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-semibold text-slate-900">Verifikasi Penjemputan</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Status keamanan kepulangan hari ini</p>
+        </div>
+        <div id="live-pickup-badge">
+          {% if today_pickup and today_pickup.status == 'SUDAH_DIJEMPUT' %}
+            <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-primary-50 text-primary-700 border border-primary-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-primary-600"></span> Sudah Dijemput
+            </span>
+          {% else %}
+            <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Belum Dijemput
+            </span>
+          {% endif %}
+        </div>
+      </div>
 
-          <!-- Live Badge -->
-          <div id="live-pickup-badge">
-            {% if today_pickup and today_pickup.status == 'SUDAH_DIJEMPUT' %}
-              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200">
-                <span class="w-2 h-2 rounded-full bg-teal-500"></span> SUDAH DIJEMPUT
-              </span>
-            {% else %}
-              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 pulse-waiting">
-                <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span> BELUM DIJEMPUT
-              </span>
+      <div id="live-pickup-details" class="p-4">
+        {% if today_pickup and today_pickup.status == 'SUDAH_DIJEMPUT' %}
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between">
+              <span class="text-slate-500">Penjemput:</span>
+              <span class="font-semibold text-slate-900">{{ today_pickup.collector_name or 'Wali Murid' }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Hubungan:</span>
+              <span class="px-2 py-0.5 rounded text-xs font-medium bg-primary-50 text-primary-700">{{ today_pickup.collector_relation or 'Keluarga' }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Waktu Penyerahan:</span>
+              <span class="font-mono font-semibold text-slate-900">{{ today_pickup.pickup_time.strftime('%H:%M WIB') if today_pickup.pickup_time else '—' }}</span>
+            </div>
+            {% if today_pickup.proof_photo_url %}
+            <div class="pt-3 border-t border-slate-100">
+              <span class="text-xs font-medium text-slate-600 block mb-2">Foto Bukti Penyerahan:</span>
+              <img src="{{ today_pickup.proof_photo_url }}" class="w-full h-32 rounded-lg object-cover border border-slate-200 cursor-pointer"
+                   onclick="window.open('{{ today_pickup.proof_photo_url }}', '_blank')">
+            </div>
             {% endif %}
           </div>
-        </div>
-
-        <!-- Live Details Container -->
-        <div id="live-pickup-details">
-          {% if today_pickup and today_pickup.status == 'SUDAH_DIJEMPUT' %}
-            <div class="mt-4 p-4 rounded-2xl bg-teal-50/70 border border-teal-100 text-xs space-y-2 text-teal-950">
-              <div class="flex items-center justify-between">
-                <span class="font-semibold text-teal-700">Nama Penjemput:</span>
-                <span class="font-bold text-sm">{{ today_pickup.collector_name or 'Wali Murid' }}</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="font-semibold text-teal-700">Hubungan:</span>
-                <span class="font-semibold px-2 py-0.5 rounded bg-teal-100 text-teal-800 text-[10px]">
-                  {{ today_pickup.collector_relation or 'Keluarga' }}
-                </span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="font-semibold text-teal-700">Waktu Penyerahan:</span>
-                <span class="font-mono font-semibold">{{ today_pickup.pickup_time.strftime('%H:%M WIB') if today_pickup.pickup_time else '-' }}</span>
-              </div>
-              
-              {% if today_pickup.proof_photo_url %}
-              <div class="pt-2">
-                <span class="text-[10px] font-bold text-teal-800 uppercase block mb-1">Foto Bukti Penyerahan:</span>
-                <img src="{{ today_pickup.proof_photo_url }}" class="w-full h-36 rounded-xl object-cover border border-teal-200 shadow-sm cursor-pointer"
-                     onclick="window.open('{{ today_pickup.proof_photo_url }}', '_blank')">
-              </div>
-              {% endif %}
-            </div>
-          {% else %}
-            <div class="mt-4 p-4 rounded-2xl bg-amber-50/50 border border-amber-200/70 text-xs text-amber-900 space-y-2">
-              <p class="font-semibold flex items-center gap-1.5 text-amber-800">
-                <i data-lucide="clock" class="w-4 h-4"></i> Anak Masih Berada di Lingkungan Sekolah
-              </p>
-              <p class="text-[11px] text-slate-600 leading-relaxed">
-                Anak Anda saat ini berada di ruang tunggu sekolah dalam pengawasan penuh oleh guru piket dan keamanan sekolah.
-              </p>
-            </div>
-          {% endif %}
-        </div>
+        {% else %}
+          <div class="p-4 rounded-lg bg-amber-50 border border-amber-100 text-sm">
+            <p class="flex items-center gap-2 font-medium text-amber-900 mb-2">
+              <i data-lucide="clock" class="w-4 h-4"></i> Anak Masih di Lingkungan Sekolah
+            </p>
+            <p class="text-xs text-slate-600">
+              Anak Anda saat ini berada dalam pengawasan penuh oleh guru piket dan keamanan sekolah.
+            </p>
+          </div>
+        {% endif %}
       </div>
 
-      <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+      <div class="p-3 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-400">
         <span class="flex items-center gap-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Sinkronisasi otomatis aktif
+          <span class="w-1 h-1 rounded-full bg-primary-500"></span> Sinkronisasi otomatis aktif
         </span>
-        <span class="italic">PAUD/TK Bintang Ceria</span>
+        <span>TK Bintang Ceria</span>
       </div>
-
     </div>
 
-    <!-- Card 2: TODAY'S DAILY JOURNAL -->
-    <div class="bento-card glass-panel p-6 rounded-3xl border border-slate-200/80 bg-white shadow-sm flex flex-col justify-between space-y-4">
-      
-      <div>
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div class="flex items-center gap-2">
-            <div class="w-9 h-9 rounded-xl bg-teal-50 text-brand-600 flex items-center justify-center">
-              <i data-lucide="book-open" class="w-5 h-5"></i>
-            </div>
-            <div>
-              <h2 class="font-heading text-lg font-bold text-slate-900">Jurnal Hari Ini</h2>
-              <p class="text-[11px] text-slate-500">{{ today|format_date_id }}</p>
-            </div>
-          </div>
-
-          {% if today_journal %}
-            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              {{ today_journal.attendance }}
-            </span>
-          {% else %}
-            <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500">
-              Belum Diisi
-            </span>
-          {% endif %}
+    <!-- Kolom Kanan: Jurnal Aktivitas Hari Ini -->
+    <div class="bg-white border border-slate-200 rounded-lg">
+      <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-semibold text-slate-900">Jurnal Hari Ini</h2>
+          <p class="text-xs text-slate-500 mt-0.5">{{ today|format_date_id }}</p>
         </div>
-
         {% if today_journal %}
-        <div class="mt-4 space-y-3 text-xs">
-          <!-- Mood -->
+          <span class="px-2 py-0.5 rounded text-xs font-medium bg-primary-50 text-primary-700 border border-primary-200">
+            {{ today_journal.attendance }}
+          </span>
+        {% else %}
+          <span class="px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-500">Belum Diisi</span>
+        {% endif %}
+      </div>
+
+      <div class="p-4">
+        {% if today_journal %}
+        <div class="space-y-3 text-sm">
           <div class="flex items-center gap-2">
-            <span class="font-semibold text-slate-500">Suasana Hati:</span>
-            <span class="inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-100">
-              <i data-lucide="smile" class="w-3.5 h-3.5 text-warm-500"></i> {{ today_journal.mood_status }}
+            <span class="text-slate-500 text-xs">Suasana Hati:</span>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-warm-50 text-slate-800 border border-warm-200">
+              <i data-lucide="smile" class="w-3 h-3"></i> {{ today_journal.mood_status }}
             </span>
           </div>
 
-          <!-- Activity summary -->
           <div>
-            <span class="font-bold text-slate-700 block mb-0.5">Aktivitas Hari Ini:</span>
-            <p class="text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-100">
+            <span class="text-xs font-medium text-slate-600 block mb-1">Aktivitas Hari Ini:</span>
+            <p class="text-sm text-slate-700 bg-slate-50 p-3 rounded-lg border border-slate-100">
               {{ today_journal.activity_summary }}
             </p>
           </div>
 
-          <!-- Meal notes -->
           {% if today_journal.meal_notes %}
           <div>
-            <span class="font-bold text-slate-700 block mb-0.5">Catatan Menu & Makan:</span>
-            <p class="text-slate-600 italic bg-amber-50/50 p-2.5 rounded-2xl border border-amber-100/60">
+            <span class="text-xs font-medium text-slate-600 block mb-1">Catatan Menu & Makan:</span>
+            <p class="text-sm text-slate-700 bg-warm-50 p-2.5 rounded-lg border border-warm-200">
               {{ today_journal.meal_notes }}
             </p>
           </div>
           {% endif %}
 
           {% if today_journal.photo_url %}
-          <div class="pt-1">
-            <img src="{{ today_journal.photo_url }}" class="w-full h-36 rounded-2xl object-cover border border-slate-200">
+          <div class="pt-2">
+            <img src="{{ today_journal.photo_url }}" class="w-full h-32 rounded-lg object-cover border border-slate-200">
           </div>
           {% endif %}
         </div>
         {% else %}
-        <div class="mt-8 text-center py-6 text-slate-400 text-xs italic">
+        <div class="text-center py-8 text-slate-400 text-xs">
           <i data-lucide="clock" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
-          Guru kelas sedang merangkum aktivitas harian anak. Jurnal akan muncul secara otomatis.
+          Guru kelas sedang merangkum aktivitas harian anak.
         </div>
         {% endif %}
       </div>
 
-      <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-        <a href="{{ url_for('parent.journal_feed', student_id=selected_child.id) }}" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
-          Lihat Riwayat Jurnal Sebelumnya <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+      <div class="p-3 border-t border-slate-200">
+        <a href="{{ url_for('parent.journal_feed', student_id=selected_child.id) }}" class="text-xs font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1">
+          Lihat Riwayat Jurnal <i data-lucide="arrow-right" class="w-3 h-3"></i>
         </a>
       </div>
-
     </div>
 
   </div>
 
-  <!-- Development Score Overview Card -->
-  <div class="glass-panel p-6 rounded-3xl border border-slate-200/80 bg-white shadow-sm space-y-4">
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+  <!-- Ringkasan Capaian Tumbuh Kembang -->
+  <div class="bg-white border border-slate-200 rounded-lg">
+    <div class="p-4 border-b border-slate-200 flex items-start justify-between">
       <div>
-        <h2 class="font-heading text-lg font-bold text-slate-900">Ringkasan Capaian Tumbuh Kembang Terkini</h2>
-        <p class="text-xs text-slate-500">Penilaian 4 pilar perkembangan anak usia dini berstandar PAUD</p>
+        <h2 class="text-base font-semibold text-slate-900">Ringkasan Capaian Tumbuh Kembang</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Penilaian 4 pilar perkembangan anak usia dini berstandar PAUD</p>
       </div>
       <a href="{{ url_for('parent.development_report', student_id=selected_child.id) }}"
-         class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-brand-50 text-brand-700 hover:bg-brand-100 transition">
-        <i data-lucide="radar" class="w-4 h-4"></i> Buka Grafik Radar & Analitik Lengkap
+         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 transition whitespace-nowrap">
+        <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Lihat Grafik Lengkap
       </a>
     </div>
 
     {% if latest_dev %}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-      <!-- Motorik Kasar -->
-      <div class="p-3.5 rounded-2xl bg-teal-50/60 border border-teal-100">
-        <span class="font-semibold text-slate-500 block text-[11px]">Motorik Kasar</span>
-        <div class="mt-1 flex items-baseline gap-1.5">
-          <span class="font-heading text-xl font-extrabold text-teal-900">{{ latest_dev.gross_motor_score }} / 4</span>
-          <span class="font-bold text-[11px] text-teal-700">{{ latest_dev.gross_motor_label.code }}</span>
+    <div class="p-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+        <span class="text-[10px] font-medium text-slate-500 block">Motorik Kasar</span>
+        <div class="mt-1 flex items-baseline gap-1">
+          <span class="text-xl font-bold text-slate-900 tabular-nums">{{ latest_dev.gross_motor_score }}</span>
+          <span class="text-xs text-slate-500">/4</span>
+          <span class="text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 ml-auto">{{ latest_dev.gross_motor_label.code }}</span>
         </div>
         <p class="text-[10px] text-slate-500 mt-1">{{ latest_dev.gross_motor_label.name }}</p>
       </div>
 
-      <!-- Motorik Halus -->
-      <div class="p-3.5 rounded-2xl bg-purple-50/60 border border-purple-100">
-        <span class="font-semibold text-slate-500 block text-[11px]">Motorik Halus</span>
-        <div class="mt-1 flex items-baseline gap-1.5">
-          <span class="font-heading text-xl font-extrabold text-purple-900">{{ latest_dev.fine_motor_score }} / 4</span>
-          <span class="font-bold text-[11px] text-purple-700">{{ latest_dev.fine_motor_label.code }}</span>
+      <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+        <span class="text-[10px] font-medium text-slate-500 block">Motorik Halus</span>
+        <div class="mt-1 flex items-baseline gap-1">
+          <span class="text-xl font-bold text-slate-900 tabular-nums">{{ latest_dev.fine_motor_score }}</span>
+          <span class="text-xs text-slate-500">/4</span>
+          <span class="text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 ml-auto">{{ latest_dev.fine_motor_label.code }}</span>
         </div>
         <p class="text-[10px] text-slate-500 mt-1">{{ latest_dev.fine_motor_label.name }}</p>
       </div>
 
-      <!-- Kognitif & Bahasa -->
-      <div class="p-3.5 rounded-2xl bg-sky-50/60 border border-sky-100">
-        <span class="font-semibold text-slate-500 block text-[11px]">Kognitif & Bahasa</span>
-        <div class="mt-1 flex items-baseline gap-1.5">
-          <span class="font-heading text-xl font-extrabold text-sky-900">{{ latest_dev.cognitive_score }} / 4</span>
-          <span class="font-bold text-[11px] text-sky-700">{{ latest_dev.cognitive_label.code }}</span>
+      <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+        <span class="text-[10px] font-medium text-slate-500 block">Kognitif & Bahasa</span>
+        <div class="mt-1 flex items-baseline gap-1">
+          <span class="text-xl font-bold text-slate-900 tabular-nums">{{ latest_dev.cognitive_score }}</span>
+          <span class="text-xs text-slate-500">/4</span>
+          <span class="text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 ml-auto">{{ latest_dev.cognitive_label.code }}</span>
         </div>
         <p class="text-[10px] text-slate-500 mt-1">{{ latest_dev.cognitive_label.name }}</p>
       </div>
 
-      <!-- Sosial Emosional -->
-      <div class="p-3.5 rounded-2xl bg-rose-50/60 border border-rose-100">
-        <span class="font-semibold text-slate-500 block text-[11px]">Sosial & Emosional</span>
-        <div class="mt-1 flex items-baseline gap-1.5">
-          <span class="font-heading text-xl font-extrabold text-rose-900">{{ latest_dev.social_emotional_score }} / 4</span>
-          <span class="font-bold text-[11px] text-rose-700">{{ latest_dev.social_emotional_label.code }}</span>
+      <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+        <span class="text-[10px] font-medium text-slate-500 block">Sosial & Emosional</span>
+        <div class="mt-1 flex items-baseline gap-1">
+          <span class="text-xl font-bold text-slate-900 tabular-nums">{{ latest_dev.social_emotional_score }}</span>
+          <span class="text-xs text-slate-500">/4</span>
+          <span class="text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 ml-auto">{{ latest_dev.social_emotional_label.code }}</span>
         </div>
         <p class="text-[10px] text-slate-500 mt-1">{{ latest_dev.social_emotional_label.name }}</p>
       </div>
     </div>
 
     {% if latest_dev.teacher_comments %}
-    <div class="p-3.5 rounded-2xl bg-amber-50/60 border border-amber-100 text-xs">
-      <span class="font-bold text-amber-900 block mb-0.5">Catatan Apresiasi dari Guru Kelas:</span>
-      <p class="text-slate-700 italic leading-relaxed">
+    <div class="p-4 border-t border-slate-200">
+      <span class="text-xs font-medium text-slate-600 block mb-1.5">Catatan Apresiasi dari Guru Kelas:</span>
+      <p class="text-sm text-slate-700 bg-warm-50 p-3 rounded-lg border border-warm-200">
         "{{ latest_dev.teacher_comments }}"
       </p>
     </div>
     {% endif %}
 
     {% else %}
-    <div class="text-center py-6 text-slate-400 text-xs italic">
+    <div class="p-8 text-center text-xs text-slate-400">
       Evaluasi berkala sedang dalam proses penyusunan oleh guru wali kelas.
     </div>
     {% endif %}

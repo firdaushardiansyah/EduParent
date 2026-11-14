@@ -2,7 +2,7 @@
 
 {% block title %}Log Audit Keamanan — EduParent{% endblock %}
 
-{% block content %}
+{% block content_area %}
 <div class="space-y-6">
 
   <!-- Header -->
@@ -16,6 +16,36 @@
     </span>
   </div>
 
+  <!-- Filter Bar -->
+  <div class="glass-panel p-3 rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+    <form method="GET" action="{{ url_for('admin.audit_logs') }}" class="flex flex-wrap items-center gap-3">
+      <div class="flex items-center gap-2">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">Tanggal:</label>
+        <input type="date" name="date" value="{{ request.args.get('date', '') }}"
+          class="px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 bg-white">
+      </div>
+      <div class="flex items-center gap-2">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">Jenis:</label>
+        <select name="action" class="px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 bg-white">
+          <option value="">Semua Aktivitas</option>
+          <option value="LOGIN" {% if request.args.get('action') == 'LOGIN' %}selected{% endif %}>LOGIN</option>
+          <option value="PICKUP" {% if request.args.get('action') == 'PICKUP' %}selected{% endif %}>PENJEMPUTAN</option>
+          <option value="CREATE" {% if request.args.get('action') == 'CREATE' %}selected{% endif %}>TAMBAH DATA</option>
+          <option value="DELETE" {% if request.args.get('action') == 'DELETE' %}selected{% endif %}>HAPUS DATA</option>
+          <option value="UPDATE" {% if request.args.get('action') == 'UPDATE' %}selected{% endif %}>UBAH DATA</option>
+        </select>
+      </div>
+      <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition">
+        <i data-lucide="filter" class="w-3.5 h-3.5"></i> Filter
+      </button>
+      {% if request.args.get('date') or request.args.get('action') %}
+      <a href="{{ url_for('admin.audit_logs') }}" class="text-xs text-slate-500 hover:text-rose-600 font-medium flex items-center gap-1">
+        <i data-lucide="x" class="w-3.5 h-3.5"></i> Reset
+      </a>
+      {% endif %}
+    </form>
+  </div>
+
   <!-- Audit Table -->
   <div class="glass-panel rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-sm">
     <div class="overflow-x-auto">
@@ -25,6 +55,7 @@
             <th class="py-3.5 px-4">Waktu (WIB)</th>
             <th class="py-3.5 px-4">Aksi / Event</th>
             <th class="py-3.5 px-4">Pengguna</th>
+            <th class="py-3.5 px-4">Peran</th>
             <th class="py-3.5 px-4">Deskripsi / Detail</th>
             <th class="py-3.5 px-4">Alamat IP</th>
           </tr>
@@ -51,6 +82,18 @@
                 <span class="text-slate-400 text-[11px] block">@{{ log.user.username }}</span>
               {% else %}
                 <span class="text-slate-400 italic">Sistem</span>
+              {% endif %}
+            </td>
+            <td class="py-3.5 px-4 font-sans text-xs">
+              {% if log.user %}
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold
+                  {% if log.user.role == 'admin' %}bg-purple-50 text-purple-700
+                  {% elif log.user.role == 'teacher' %}bg-teal-50 text-teal-700
+                  {% else %}bg-amber-50 text-amber-700{% endif %}">
+                  {{ log.user.role|upper }}
+                </span>
+              {% else %}
+                <span class="text-slate-400">—</span>
               {% endif %}
             </td>
             <td class="py-3.5 px-4 font-sans text-xs text-slate-700">

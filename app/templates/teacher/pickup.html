@@ -2,7 +2,7 @@
 
 {% block title %}Verifikasi Penjemputan Anak — EduParent{% endblock %}
 
-{% block content %}
+{% block content_area %}
 <div class="space-y-6">
 
   <!-- Header -->
@@ -62,11 +62,32 @@
     </div>
   </div>
 
+  <!-- Filter Status -->
+  <div class="glass-panel p-3 rounded-2xl border border-slate-200/80 bg-white flex items-center gap-2">
+    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Filter Status:</span>
+    <div class="flex gap-1.5">
+      <a href="{{ url_for('teacher.pickup', class_id=selected_class_id) }}"
+        class="px-3 py-1 rounded-xl text-xs font-bold transition {% if not request.args.get('status') %}bg-slate-800 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+        Semua ({{ students|length }})
+      </a>
+      <a href="{{ url_for('teacher.pickup', class_id=selected_class_id, status='waiting') }}"
+        class="px-3 py-1 rounded-xl text-xs font-bold transition {% if request.args.get('status') == 'waiting' %}bg-amber-500 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+        Menunggu ({{ students|length - (pickup_map.values()|selectattr('status', 'equalto', 'SUDAH_DIJEMPUT')|list|length) }})
+      </a>
+      <a href="{{ url_for('teacher.pickup', class_id=selected_class_id, status='done') }}"
+        class="px-3 py-1 rounded-xl text-xs font-bold transition {% if request.args.get('status') == 'done' %}bg-primary-600 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+        Sudah Dijemput ({{ pickup_map.values()|selectattr('status', 'equalto', 'SUDAH_DIJEMPUT')|list|length }})
+      </a>
+    </div>
+  </div>
+
   <!-- Pickup Cards Grid -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
     {% for s in students %}
     {% set p = pickup_map.get(s.id) %}
     {% set is_picked_up = (p and p.status == 'SUDAH_DIJEMPUT') %}
+    {% set status_filter = request.args.get('status') %}
+    {% if not status_filter or (status_filter == 'waiting' and not is_picked_up) or (status_filter == 'done' and is_picked_up) %}
 
     <div class="glass-panel p-5 rounded-3xl border {% if is_picked_up %}border-teal-200 bg-white shadow-sm{% else %}border-amber-200 bg-amber-50/30 shadow-md{% endif %} flex flex-col justify-between space-y-4 relative">
       
@@ -168,6 +189,7 @@
       </div>
 
     </div>
+    {% endif %}
     {% endfor %}
   </div>
 
